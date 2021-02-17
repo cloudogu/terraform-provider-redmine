@@ -32,7 +32,7 @@ install-local: compile
 package: CHANGELOG.md LICENSE README.md $(BINARY)
 	tar czf $(BINARY).tar.gz CHANGELOG.md LICENSE README.md $(BINARY)
 
-PRE_INTEGRATIONTESTS=start-local-docker-compose wait-for-redmine
+PRE_INTEGRATIONTESTS=start-local-docker-compose wait-for-redmine load-redmine-defaults
 
 .PHONY: clean-test-cache
 clean-test-cache:
@@ -62,3 +62,8 @@ wait-for-redmine:
 	done; \
 	echo "Redmine does not seem to be up"; \
 	exit 1;
+
+.PHONY load-redmine-defaults:
+load-redmine-defaults:
+	@echo "Loading Redmine default configuration"
+	@docker-compose exec redmine bash -c "RAILS_ENV=production REDMINE_LANG=en bundle exec rake redmine:load_default_data"
