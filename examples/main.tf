@@ -22,23 +22,21 @@ provider "redmine" {
 }
 */
 
-resource "redmine_project" "example_project1" {
+resource "redmine_project" "project1" {
   name = "example project"
   identifier = "example project"
   description = "this is an example project"
   is_public = false
-  parent_id = ""
   inherit_members = true
   tracker_ids = [ "1", "2" ]
-  enabled_module_names = [ "boards", calendar, documents, files, gantt, issue_tracking, news, repository, time_tracking, wiki ]
+  enabled_module_names = [ "issue_tracking", "time_tracking" ]
 }
 
-resource "redmine_issue" "ticket1" {
-  id = "1"
-  project_identifier = "redmine_project.example_project1"
-  tracker_id = "1"
-  status_id = "1"
-  subject = "Something should be done"
-  description = "In this ticket an **important task** should be done!\n\nGo ahead!"
-  priority_id = "1"
-}
+//resource "redmine_issue" "issue1" {
+//  project_id = redmine_project.project1.id
+//  tracker_id = 1
+//  status_id = 1
+//  subject = "Something should be done"
+//  description = "In this ticket an **important task** should be done!\n\nGo ahead!"
+//  priority_id = 1
+//}

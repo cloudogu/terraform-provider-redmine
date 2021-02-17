@@ -13,7 +13,7 @@ var testAccProvider *schema.Provider
 func init() {
 	testAccProvider = Provider()
 	testAccProviders = map[string]func() (*schema.Provider, error){
-		"scm": func() (*schema.Provider, error) {
+		"redmine": func() (*schema.Provider, error) {
 			return testAccProvider, nil
 		},
 	}

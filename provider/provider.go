@@ -9,6 +9,7 @@ import (
 )
 
 type Client interface {
+	CreateProject(ctx context.Context, project redmine.Project) error
 }
 
 func Provider() *schema.Provider {
@@ -33,10 +34,11 @@ func Provider() *schema.Provider {
 			"skip_cert_verify": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("SCM_SKIP_CERT_VERIFY", false),
+				DefaultFunc: schema.EnvDefaultFunc("REDMINE_SKIP_CERT_VERIFY", false),
 			},
 		},
-		ResourcesMap:         map[string]*schema.Resource{},
+		ResourcesMap:         map[string]*schema.Resource{"redmine_project": resourceProject()},
+		DataSourcesMap:       map[string]*schema.Resource{"redmine_issue_statuses": dataSourceIssueStatuses()},
 		ConfigureContextFunc: providerConfigure,
 	}
 }
