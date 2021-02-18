@@ -7,12 +7,17 @@ HOSTNAME=cloudogu.com
 NAMESPACE=tf
 NAME=redmine
 
+include build/make/variables.mk
+
+DEFAULT_ADMIN_CREDENTIALS=admin:admin
+REDMINE_URL=http://localhost:8080
+REDMINE_API_TOKEN=${TARGET_DIR}/redmineAPIToken.txt
+
 TEST?=$$(go list ./... | grep -v 'vendor')
 
 .DEFAULT_GOAL:=compile
 ADDITIONAL_CLEAN=clean-test-cache
 
-include build/make/variables.mk
 include build/make/info.mk
 include build/make/dependencies-gomod.mk
 include build/make/build.mk
@@ -53,7 +58,7 @@ acceptance-test-local: start-local-docker-compose
 wait-for-redmine:
 	@echo "Waiting for Redmine to get up"
 	@for counter in `seq 0 5`; do \
-		if curl -f -s -H "Content-Type: application/json" http://localhost:8080/projects.json > /dev/null; then \
+		if curl -f -s -H "Content-Type: application/json" ${REDMINE_URL}/projects.json > /dev/null; then \
 			echo "Redmine is up"; \
 			exit 0; \
 		fi; \
@@ -67,3 +72,31 @@ wait-for-redmine:
 load-redmine-defaults:
 	@echo "Loading Redmine default configuration"
 	@docker-compose exec redmine bash -c "RAILS_ENV=production REDMINE_LANG=en bundle exec rake redmine:load_default_data"
+
+.PHONY mark-admin-password-as-changed:
+mark-admin-password-as-changed: install-sqlite-client
+	@echo "Mark admin password as already changed"
+	@docker-compose exec redmine \
+		sqlite3 /usr/src/redmine/sqlite/redmine.db \
+		"update users set must_change_passwd=0 where id=1;"
+	@echo "Restart Redmine to apply changed user data"
+	@docker-compose restart redmine
+	@make wait-for-redmine
+
+.PHONY install-sqlite-client:
+install-sqlite-client:
+	@if ! docker-compose exec redmine sh -c "apk list sqlite | grep installed" ; then \
+		echo "Installing sqlite..." ; \
+		docker-compose exec redmine apk add sqlite ; \
+	fi;
+
+${REDMINE_API_TOKEN}: ${TARGET_DIR}
+	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | jq -r .user.api_key > ${REDMINE_API_TOKEN}
+
+.PHONY start-redmine:
+start-redmine:
+	@make start-local-docker-compose wait-for-redmine load-redmine-defaults mark-admin-password-as-changed ${REDMINE_API_TOKEN}
+
+.PHONY teardown-redmine:
+teardown-redmine:
+	@docker-compose rm --force --stop

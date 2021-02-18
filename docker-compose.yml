@@ -9,6 +9,7 @@ services:
       REDMINE_SECRET_KEY_BASE: supersecretkey
     volumes:
     - redmine_data:/usr/src/redmine/files
+    - ./docker-compose/settings.yml:/usr/src/redmine/config/settings.yml
 volumes:
   redmine_data:
     driver: local
