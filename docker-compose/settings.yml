@@ -135,7 +135,7 @@ sys_api_enabled:
   default: 1
   security_notifications: 1
 sys_api_key:
-  default: 'b647bba3b6fadd93e8d4c791445cd46282c1fff8'
+  default: ''
   security_notifications: 1
 commit_cross_project_ref:
   default: 0

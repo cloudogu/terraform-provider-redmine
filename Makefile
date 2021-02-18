@@ -90,13 +90,15 @@ install-sqlite-client:
 		docker-compose exec redmine apk add sqlite ; \
 	fi;
 
-${REDMINE_API_TOKEN}: ${TARGET_DIR}
+.PHONY fetch-api-token:
+fetch-api-token: ${TARGET_DIR}
+	@echo "Fetching API token"
 	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | jq -r .user.api_key > ${REDMINE_API_TOKEN}
 
 .PHONY start-redmine:
 start-redmine:
-	@make start-local-docker-compose wait-for-redmine load-redmine-defaults mark-admin-password-as-changed ${REDMINE_API_TOKEN}
+	@make start-local-docker-compose wait-for-redmine load-redmine-defaults mark-admin-password-as-changed fetch-api-token
 
-.PHONY teardown-redmine:
-teardown-redmine:
+.PHONY clean-redmine:
+clean-redmine: clean
 	@docker-compose rm --force --stop

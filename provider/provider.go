@@ -9,7 +9,8 @@ import (
 )
 
 type Client interface {
-	CreateProject(ctx context.Context, project redmine.Project) error
+	CreateProject(ctx context.Context, project *redmine.Project) error
+	ReadProject(ctx context.Context, id string) (*redmine.Project, error)
 }
 
 func Provider() *schema.Provider {
@@ -36,9 +37,18 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("REDMINE_SKIP_CERT_VERIFY", false),
 			},
+			"api_key": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("REDMINE_API_KEY", ""),
+			},
 		},
-		ResourcesMap:         map[string]*schema.Resource{"redmine_project": resourceProject()},
-		DataSourcesMap:       map[string]*schema.Resource{"redmine_issue_statuses": dataSourceIssueStatuses()},
+		ResourcesMap: map[string]*schema.Resource{
+			"redmine_project": resourceProject(),
+		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"redmine_issue_statuses": dataSourceIssueStatuses(),
+		},
 		ConfigureContextFunc: providerConfigure,
 	}
 }
@@ -47,6 +57,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
 	skipVerify := d.Get("skip_cert_verify").(bool)
+	apiKey := d.Get("api_key").(string)
 
 	var url string
 
@@ -60,6 +71,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		Username:       username,
 		Password:       password,
 		SkipCertVerify: skipVerify,
+		APIKey:         apiKey,
 	})
 
 	return client, nil
