@@ -96,7 +96,7 @@ func resourceProject() *schema.Resource {
 func resourceProjectRead(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	projectID := d.Get(PrjIdentifier).(string)
+	projectID := d.Get(PrjID).(string)
 
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
@@ -122,13 +122,15 @@ func resourceProjectCreate(ctx context.Context, d *schema.ResourceData, i interf
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Create Project",
-		Detail:   "Project ID ist:" + project.Identifier,
+		Detail:   "Project ID ist:" + project.ID,
 	})
 
-	_, err := client.CreateProject(ctx, project)
+	createdProject, err := client.CreateProject(ctx, project)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	d.SetId(createdProject.ID)
 
 	diagRead := resourceProjectRead(ctx, d, i)
 	diags = append(diags, diagRead...)
@@ -140,7 +142,7 @@ func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, i interf
 	var diags diag.Diagnostics
 	client := i.(ProjectClient)
 
-	projectID := d.Get(PrjIdentifier).(string)
+	projectID := d.Get(PrjID).(string)
 
 	if d.HasChange(PrjName) {
 		diags = append(diags, diag.Diagnostic{

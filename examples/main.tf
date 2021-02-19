@@ -11,7 +11,7 @@ provider "redmine" {
   username = "admin"
   password = "admin"
   skip_cert_verify = true
-  api_key = "1234567890"
+  api_key = "f4ed669a723ebe1be8052dd1848ed72c80b1b5be"
 }
 
 /*

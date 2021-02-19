@@ -25,7 +25,7 @@ func (c *Client) CreateProject(ctx context.Context, project *Project) (*Project,
 
 	actualAPIProject, err := c.redmineAPI.CreateProject(*apiProj)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error while creating project (identifier %d)", project.Identifier)
+		return nil, errors.Wrapf(err, "error while creating project (id %s)", project.ID)
 	}
 
 	actualProject := unwrapProject(actualAPIProject)
@@ -33,11 +33,14 @@ func (c *Client) CreateProject(ctx context.Context, project *Project) (*Project,
 	return actualProject, nil
 }
 
-func (c *Client) ReadProject(ctx context.Context, identifier string) (project *Project, err error) {
-	project, err = c.getProjectByIdentifier(ctx, identifier)
+func (c *Client) ReadProject(ctx context.Context, id string) (project *Project, err error) {
+	idInt, _ := strconv.Atoi(id)
+	apiProj, err := c.redmineAPI.Project(idInt)
 	if err != nil {
-		return project, errors.Wrapf(err, "error while reading project (identifier %s)", identifier)
+		return project, errors.Wrapf(err, "error while reading project (id %s)", id)
 	}
+
+	project = unwrapProject(apiProj)
 
 	return project, nil
 }
@@ -47,7 +50,7 @@ func (c *Client) UpdateProject(ctx context.Context, project *Project) (updatedPr
 
 	err = c.redmineAPI.UpdateProject(apiProj)
 	if err != nil {
-		return project, errors.Wrapf(err, "error while updating project (identifier %s)", apiProj.Identifier)
+		return project, errors.Wrapf(err, "error while updating project (id %d)", apiProj.Id)
 	}
 
 	project = unwrapProject(&apiProj)
@@ -57,22 +60,6 @@ func (c *Client) UpdateProject(ctx context.Context, project *Project) (updatedPr
 
 func (c *Client) DeleteProject(ctx context.Context, name string) error {
 	return nil
-}
-
-func (c *Client) getProjectByIdentifier(ctx context.Context, identifier string) (*Project, error) {
-	apiProjects, err := c.redmineAPI.Projects()
-	if err != nil {
-		return nil, errors.Wrapf(err, "error while fetching project by identifier %s", identifier)
-	}
-
-	for _, apiProj := range apiProjects {
-		if apiProj.Identifier == identifier {
-			project := unwrapProject(&apiProj)
-			return project, nil
-		}
-	}
-
-	return nil, errors.Errorf("could not find project by identifier %s", identifier)
 }
 
 func wrapProject(project *Project) *rmapi.Project {
