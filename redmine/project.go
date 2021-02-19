@@ -12,12 +12,16 @@ type Project struct {
 	Name               string   `json:"name"`
 	Identifier         string   `json:"identifier"`
 	Description        string   `json:"description"`
+	Homepage           string   `json:"homepage"`
 	IsPublic           bool     `json:"is_public"`
 	ParentID           string   `json:"parent_id"`
 	InheritMembers     bool     `json:"inherit_members"`
-	TrackerIDs         []string `json:"tracker_ids"`
+	TrackerIDs         []int    `json:"tracker_ids"`
 	EnabledModuleNames []string `json:"enabled_module_names"`
-	UpdatedOn          string   `json:"updated_on"`
+	// IssueCategories    []struc?   `json:"issue_categories"`
+	CustomFieldIDs []int  `json:"issue_custom_field_ids"`
+	CreatedOn      string `json:"created_on"`
+	UpdatedOn      string `json:"updated_on"`
 }
 
 func (c *Client) CreateProject(ctx context.Context, project *Project) (*Project, error) {
@@ -35,7 +39,11 @@ func (c *Client) CreateProject(ctx context.Context, project *Project) (*Project,
 
 func (c *Client) ReadProject(ctx context.Context, id string) (project *Project, err error) {
 	idInt, _ := strconv.Atoi(id)
-	apiProj, err := c.redmineAPI.Project(idInt)
+	apiProj, err := c.redmineAPI.ProjectWithAdditionalFields(idInt,
+		rmapi.ProjectAdditionalFieldTrackers,
+		rmapi.ProjectAdditionalFieldIssueCategories,
+		rmapi.ProjectAdditionalFieldEnabledModules,
+		rmapi.ProjectAdditionalFieldTimeEntryActivities)
 	if err != nil {
 		return project, errors.Wrapf(err, "error while reading project (id %s)", id)
 	}
@@ -64,10 +72,17 @@ func (c *Client) DeleteProject(ctx context.Context, name string) error {
 
 func wrapProject(project *Project) *rmapi.Project {
 	apiProj := &rmapi.Project{
-		Name:        project.Name,
-		Identifier:  project.Identifier,
-		Description: project.Description,
-		UpdatedOn:   project.UpdatedOn,
+		Name:               project.Name,
+		Identifier:         project.Identifier,
+		Description:        project.Description,
+		Homepage:           project.Homepage,
+		IsPublic:           project.IsPublic,
+		InheritMembers:     project.InheritMembers,
+		TrackerIDs:         project.TrackerIDs,
+		EnabledModuleNames: project.EnabledModuleNames,
+		CustomFields:       []int{},
+		CreatedOn:          project.CreatedOn,
+		UpdatedOn:          project.UpdatedOn,
 	}
 
 	if project.ID != "" {
@@ -82,17 +97,22 @@ func wrapProject(project *Project) *rmapi.Project {
 
 func unwrapProject(apiProj *rmapi.Project) *Project {
 	project := &Project{
-		ID:                 strconv.Itoa(apiProj.Id),
 		Name:               apiProj.Name,
 		Identifier:         apiProj.Identifier,
 		Description:        apiProj.Description,
-		IsPublic:           true,
-		InheritMembers:     false,
-		TrackerIDs:         []string{},
-		EnabledModuleNames: []string{},
+		Homepage:           apiProj.Homepage,
+		IsPublic:           apiProj.IsPublic,
+		InheritMembers:     apiProj.InheritMembers,
+		TrackerIDs:         apiProj.TrackerIDs,
+		EnabledModuleNames: apiProj.EnabledModuleNames,
+		CustomFieldIDs:     apiProj.CustomFields,
+		CreatedOn:          apiProj.CreatedOn,
 		UpdatedOn:          apiProj.UpdatedOn,
 	}
 
+	if apiProj.Id != 0 {
+		project.ID = strconv.Itoa(apiProj.Id)
+	}
 	if apiProj.ParentID.Id != 0 {
 		project.ParentID = strconv.Itoa(apiProj.ParentID.Id)
 	}

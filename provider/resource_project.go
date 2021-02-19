@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"strconv"
 )
 
 const (
@@ -212,7 +213,7 @@ func projectFromState(d *schema.ResourceData) *redmine.Project {
 	project.ParentID = d.Get(PrjParentID).(string)
 	project.InheritMembers = d.Get(PrjInheritMembers).(bool)
 	println(18, d.Get(PrjTrackerIDs).([]interface{}))
-	project.TrackerIDs = toStringSlice(d.Get(PrjTrackerIDs).([]interface{}))
+	project.TrackerIDs = toIntSlice(d.Get(PrjTrackerIDs).([]interface{}))
 	println(19)
 	project.EnabledModuleNames = toStringSlice(d.Get(PrjEnabledModuleNames).([]interface{}))
 	println(10)
@@ -226,6 +227,16 @@ func toStringSlice(slice []interface{}) []string {
 	result := make([]string, len(slice))
 	for _, item := range slice {
 		resultItem := item.(string)
+		result = append(result, resultItem)
+	}
+
+	return result
+}
+
+func toIntSlice(slice []interface{}) []int {
+	result := make([]int, len(slice))
+	for _, item := range slice {
+		resultItem, _ := strconv.Atoi(item.(string))
 		result = append(result, resultItem)
 	}
 
