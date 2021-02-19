@@ -2,13 +2,13 @@ package redmine
 
 import (
 	"context"
-	rmapi "github.com/mattn/go-redmine"
+	rmapi "github.com/cloudogu/go-redmine"
 	"github.com/pkg/errors"
 	"strconv"
 )
 
 type Project struct {
-	ID                 int      `json:"id"`
+	ID                 string   `json:"id"`
 	Name               string   `json:"name"`
 	Identifier         string   `json:"identifier"`
 	Description        string   `json:"description"`
@@ -17,57 +17,77 @@ type Project struct {
 	InheritMembers     bool     `json:"inherit_members"`
 	TrackerIDs         []string `json:"tracker_ids"`
 	EnabledModuleNames []string `json:"enabled_module_names"`
+	UpdatedOn          string   `json:"updated_on"`
 }
 
-func (prj *Project) GetID() string {
-	return strconv.Itoa(prj.ID)
-}
-
-func (c *Client) CreateProject(ctx context.Context, project *Project) error {
+func (c *Client) CreateProject(ctx context.Context, project *Project) (*Project, error) {
 	apiProj := wrapProject(project)
 
-	_, err := c.redmineAPI.CreateProject(*apiProj)
+	actualAPIProject, err := c.redmineAPI.CreateProject(*apiProj)
 	if err != nil {
-		return errors.Wrapf(err, "error while creating project (id %d)", project.ID)
+		return nil, errors.Wrapf(err, "error while creating project (identifier %d)", project.Identifier)
 	}
 
-	return nil
+	actualProject := unwrapProject(actualAPIProject)
+
+	return actualProject, nil
 }
 
-func (c *Client) ReadProject(ctx context.Context, id string) (project *Project, err error) {
-	projectID, _ := strconv.Atoi(id)
-	apiProj, err := c.redmineAPI.Project(projectID)
+func (c *Client) ReadProject(ctx context.Context, identifier string) (project *Project, err error) {
+	project, err = c.getProjectByIdentifier(ctx, identifier)
 	if err != nil {
-		return project, errors.Wrapf(err, "error while reading project (id %s)", id)
+		return project, errors.Wrapf(err, "error while reading project (identifier %s)", identifier)
 	}
-
-	project = unwrapProject(apiProj)
 
 	return project, nil
 }
 
-func (c *Client) UpdateProject(ctx context.Context, name string, project *Project) error {
-	return nil
+func (c *Client) UpdateProject(ctx context.Context, project *Project) (updatedProject *Project, err error) {
+	apiProj := *wrapProject(project)
+
+	err = c.redmineAPI.UpdateProject(apiProj)
+	if err != nil {
+		return project, errors.Wrapf(err, "error while updating project (identifier %s)", apiProj.Identifier)
+	}
+
+	project = unwrapProject(&apiProj)
+
+	return project, nil
 }
 
 func (c *Client) DeleteProject(ctx context.Context, name string) error {
 	return nil
 }
 
-func (c *Client) setProject(ctx context.Context, project *Project, method string, url string) error {
-	return nil
+func (c *Client) getProjectByIdentifier(ctx context.Context, identifier string) (*Project, error) {
+	apiProjects, err := c.redmineAPI.Projects()
+	if err != nil {
+		return nil, errors.Wrapf(err, "error while fetching project by identifier %s", identifier)
+	}
+
+	for _, apiProj := range apiProjects {
+		if apiProj.Identifier == identifier {
+			project := unwrapProject(&apiProj)
+			return project, nil
+		}
+	}
+
+	return nil, errors.Errorf("could not find project by identifier %s", identifier)
 }
 
 func wrapProject(project *Project) *rmapi.Project {
 	apiProj := &rmapi.Project{
-		Id:          project.ID,
 		Name:        project.Name,
 		Identifier:  project.Identifier,
 		Description: project.Description,
+		UpdatedOn:   project.UpdatedOn,
 	}
 
+	if project.ID != "" {
+		apiProj.Id, _ = strconv.Atoi(project.ID)
+	}
 	if project.ParentID != "" {
-		apiProj.Parent.Id, _ = strconv.Atoi(project.ParentID)
+		apiProj.ParentID.Id, _ = strconv.Atoi(project.ParentID)
 	}
 
 	return apiProj
@@ -75,7 +95,7 @@ func wrapProject(project *Project) *rmapi.Project {
 
 func unwrapProject(apiProj *rmapi.Project) *Project {
 	project := &Project{
-		ID:                 apiProj.Id,
+		ID:                 strconv.Itoa(apiProj.Id),
 		Name:               apiProj.Name,
 		Identifier:         apiProj.Identifier,
 		Description:        apiProj.Description,
@@ -83,10 +103,11 @@ func unwrapProject(apiProj *rmapi.Project) *Project {
 		InheritMembers:     false,
 		TrackerIDs:         []string{},
 		EnabledModuleNames: []string{},
+		UpdatedOn:          apiProj.UpdatedOn,
 	}
 
-	if apiProj.Parent.Name != "" {
-		project.ParentID = strconv.Itoa(apiProj.Parent.Id)
+	if apiProj.ParentID.Id != 0 {
+		project.ParentID = strconv.Itoa(apiProj.ParentID.Id)
 	}
 
 	return project

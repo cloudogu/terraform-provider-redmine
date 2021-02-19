@@ -1,7 +1,7 @@
 package redmine
 
 import (
-	rmapi "github.com/mattn/go-redmine"
+	rmapi "github.com/cloudogu/go-redmine"
 )
 
 type Client struct {
@@ -18,7 +18,9 @@ type Config struct {
 }
 
 func NewClient(config Config) *Client {
-	redmindAPI := rmapi.NewClient(config.URL, config.APIKey)
+	redmineAPI := rmapi.NewClient(config.URL, config.APIKey)
+	redmineAPI.Limit = -1
+	redmineAPI.Offset = -1
 
-	return &Client{config: config, redmineAPI: redmindAPI}
+	return &Client{config: config, redmineAPI: redmineAPI}
 }

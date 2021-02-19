@@ -3,12 +3,29 @@ package provider
 import (
 	"context"
 	"github.com/cloudogu/terraform-provider-redmine/redmine"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"strconv"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
+
+const (
+	PrjID                 = "id"
+	PrjName               = "name"
+	PrjIdentifier         = "identifier"
+	PrjDescription        = "description"
+	PrjIsPublic           = "is_public"
+	PrjParentID           = "parent_id"
+	PrjInheritMembers     = "inherit_members"
+	PrjTrackerIDs         = "tracker_ids"
+	PrjEnabledModuleNames = "enabled_module_names"
+	PrjUpdatedOn          = "updated_on"
+)
+
+type ProjectClient interface {
+	CreateProject(ctx context.Context, project *redmine.Project) (*redmine.Project, error)
+	ReadProject(ctx context.Context, identifier string) (*redmine.Project, error)
+	UpdateProject(ctx context.Context, project *redmine.Project) (*redmine.Project, error)
+}
 
 func resourceProject() *schema.Resource {
 	return &schema.Resource{
@@ -17,47 +34,46 @@ func resourceProject() *schema.Resource {
 		UpdateContext: resourceProjectUpdate,
 		DeleteContext: resourceProjectDelete,
 		Schema: map[string]*schema.Schema{
-			"id": {
+			PrjID: {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"name": {
+			PrjName: {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			PrjIdentifier: {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"identifier": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"description": {
+			PrjDescription: {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "",
 			},
-			"is_public": {
+			PrjIsPublic: {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			"parent_id": {
+			PrjParentID: {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"inherit_members": {
+			PrjInheritMembers: {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
 			},
-			"tracker_ids": {
+			PrjTrackerIDs: {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 				Optional: true,
 			},
-			"enabled_module_names": {
+			PrjEnabledModuleNames: {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -68,6 +84,11 @@ func resourceProject() *schema.Resource {
 				},
 				Optional: true,
 			},
+			PrjUpdatedOn: {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -75,35 +96,70 @@ func resourceProject() *schema.Resource {
 func resourceProjectRead(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	projectID := d.Get("id").(string)
+	projectID := d.Get(PrjIdentifier).(string)
 
-	client := i.(Client)
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Read Project",
+		Detail:   "Project ID ist:" + projectID,
+	})
+
+	client := i.(ProjectClient)
 	project, err := client.ReadProject(ctx, projectID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(project.GetID())
-
-	return diags
+	return projectSetToState(project, d)
 }
 
 func resourceProjectCreate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
-	client := i.(Client)
+	var diags diag.Diagnostics
+	client := i.(ProjectClient)
 
 	project := projectFromState(d)
 
-	err := client.CreateProject(ctx, project)
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Create Project",
+		Detail:   "Project ID ist:" + project.Identifier,
+	})
+
+	_, err := client.CreateProject(ctx, project)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(project.GetID())
-	return resourceProjectRead(ctx, d, i)
+	diagRead := resourceProjectRead(ctx, d, i)
+	diags = append(diags, diagRead...)
+
+	return diags
 }
 
 func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
+	client := i.(ProjectClient)
+
+	projectID := d.Get(PrjIdentifier).(string)
+
+	if d.HasChange(PrjName) {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Project has changed!",
+			Detail:   "Project ID ist:" + projectID,
+		})
+	}
+
+	project := projectFromState(d)
+
+	_, err := client.UpdateProject(ctx, project)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	diagRead := resourceProjectRead(ctx, d, i)
+	diags = append(diags, diagRead...)
+
 	return diags
 }
 
@@ -112,32 +168,33 @@ func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, i interf
 	return diags
 }
 
-func projectSetToState(project redmine.Project, d *schema.ResourceData) diag.Diagnostics {
-	if err := d.Set("id", project.ID); err != nil {
+func projectSetToState(project *redmine.Project, d *schema.ResourceData) diag.Diagnostics {
+	d.SetId(project.ID)
+	if err := d.Set(PrjName, project.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("name", project.Name); err != nil {
+	if err := d.Set(PrjIdentifier, project.Identifier); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("identifier", project.Identifier); err != nil {
+	if err := d.Set(PrjDescription, project.Description); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("description", project.Description); err != nil {
+	if err := d.Set(PrjIsPublic, project.IsPublic); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("is_public", project.IsPublic); err != nil {
+	if err := d.Set(PrjParentID, project.ParentID); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("parent_id", project.ParentID); err != nil {
+	if err := d.Set(PrjInheritMembers, project.InheritMembers); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("inherit_members", project.InheritMembers); err != nil {
+	if err := d.Set(PrjTrackerIDs, project.TrackerIDs); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("tracker_ids", project.TrackerIDs); err != nil {
+	if err := d.Set(PrjEnabledModuleNames, project.EnabledModuleNames); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("enabled_module_names", project.EnabledModuleNames); err != nil {
+	if err := d.Set(PrjUpdatedOn, project.UpdatedOn); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
@@ -145,25 +202,20 @@ func projectSetToState(project redmine.Project, d *schema.ResourceData) diag.Dia
 
 func projectFromState(d *schema.ResourceData) *redmine.Project {
 	project := &redmine.Project{}
-	println(1)
-	project.ID, _ = strconv.Atoi(d.Get("id").(string))
-	println(12)
-	project.Name = d.Get("name").(string)
-	println(13)
-	project.Identifier = d.Get("identifier").(string)
-	println(14)
-	project.Description = d.Get("description").(string)
-	println(15)
-	project.IsPublic = d.Get("is_public").(bool)
-	println(16)
-	project.ParentID = d.Get("parent_id").(string)
-	println(17)
-	project.InheritMembers = d.Get("inherit_members").(bool)
-	println(18, d.Get("tracker_ids").([]interface{}))
-	project.TrackerIDs = toStringSlice(d.Get("tracker_ids").([]interface{}))
+	project.ID, _ = d.Get(PrjID).(string)
+	project.Name = d.Get(PrjName).(string)
+	project.Identifier = d.Get(PrjIdentifier).(string)
+	project.Description = d.Get(PrjDescription).(string)
+	project.IsPublic = d.Get(PrjIsPublic).(bool)
+	project.ParentID = d.Get(PrjParentID).(string)
+	project.InheritMembers = d.Get(PrjInheritMembers).(bool)
+	println(18, d.Get(PrjTrackerIDs).([]interface{}))
+	project.TrackerIDs = toStringSlice(d.Get(PrjTrackerIDs).([]interface{}))
 	println(19)
-	project.EnabledModuleNames = toStringSlice(d.Get("enabled_module_names").([]interface{}))
+	project.EnabledModuleNames = toStringSlice(d.Get(PrjEnabledModuleNames).([]interface{}))
 	println(10)
+	project.UpdatedOn = d.Get(PrjUpdatedOn).(string)
+	println(11)
 
 	return project
 }

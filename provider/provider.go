@@ -8,11 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type Client interface {
-	CreateProject(ctx context.Context, project *redmine.Project) error
-	ReadProject(ctx context.Context, id string) (*redmine.Project, error)
-}
-
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
