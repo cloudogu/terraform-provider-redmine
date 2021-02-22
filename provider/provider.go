@@ -40,6 +40,7 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"redmine_project": resourceProject(),
+			"redmine_issue":   resourceIssue(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"redmine_issue_statuses": dataSourceIssueStatuses(),
