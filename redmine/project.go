@@ -8,18 +8,14 @@ import (
 )
 
 type Project struct {
-	ID                 string   `json:"id"`
-	Name               string   `json:"name"`
-	Identifier         string   `json:"identifier"`
-	Description        string   `json:"description"`
-	Homepage           string   `json:"homepage"`
-	IsPublic           bool     `json:"is_public"`
-	ParentID           string   `json:"parent_id"`
-	InheritMembers     bool     `json:"inherit_members"`
-	TrackerIDs         []int    `json:"tracker_ids"`
-	EnabledModuleNames []string `json:"enabled_module_names"`
-	// IssueCategories    []struc?   `json:"issue_categories"`
-	CustomFieldIDs []int  `json:"issue_custom_field_ids"`
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Identifier     string `json:"identifier"`
+	Description    string `json:"description"`
+	Homepage       string `json:"homepage"`
+	IsPublic       bool   `json:"is_public"`
+	ParentID       string `json:"parent_id"`
+	InheritMembers bool   `json:"inherit_members"`
 	CreatedOn      string `json:"created_on"`
 	UpdatedOn      string `json:"updated_on"`
 }
@@ -72,17 +68,14 @@ func (c *Client) DeleteProject(ctx context.Context, name string) error {
 
 func wrapProject(project *Project) *rmapi.Project {
 	apiProj := &rmapi.Project{
-		Name:               project.Name,
-		Identifier:         project.Identifier,
-		Description:        project.Description,
-		Homepage:           project.Homepage,
-		IsPublic:           project.IsPublic,
-		InheritMembers:     project.InheritMembers,
-		TrackerIDs:         project.TrackerIDs,
-		EnabledModuleNames: project.EnabledModuleNames,
-		CustomFields:       []int{},
-		CreatedOn:          project.CreatedOn,
-		UpdatedOn:          project.UpdatedOn,
+		Name:           project.Name,
+		Identifier:     project.Identifier,
+		Description:    project.Description,
+		Homepage:       project.Homepage,
+		IsPublic:       project.IsPublic,
+		InheritMembers: project.InheritMembers,
+		CreatedOn:      project.CreatedOn,
+		UpdatedOn:      project.UpdatedOn,
 	}
 
 	if project.ID != "" {
@@ -97,17 +90,14 @@ func wrapProject(project *Project) *rmapi.Project {
 
 func unwrapProject(apiProj *rmapi.Project) *Project {
 	project := &Project{
-		Name:               apiProj.Name,
-		Identifier:         apiProj.Identifier,
-		Description:        apiProj.Description,
-		Homepage:           apiProj.Homepage,
-		IsPublic:           apiProj.IsPublic,
-		InheritMembers:     apiProj.InheritMembers,
-		TrackerIDs:         apiProj.TrackerIDs,
-		EnabledModuleNames: apiProj.EnabledModuleNames,
-		CustomFieldIDs:     apiProj.CustomFields,
-		CreatedOn:          apiProj.CreatedOn,
-		UpdatedOn:          apiProj.UpdatedOn,
+		Name:           apiProj.Name,
+		Identifier:     apiProj.Identifier,
+		Description:    apiProj.Description,
+		Homepage:       apiProj.Homepage,
+		IsPublic:       apiProj.IsPublic,
+		InheritMembers: apiProj.InheritMembers,
+		CreatedOn:      apiProj.CreatedOn,
+		UpdatedOn:      apiProj.UpdatedOn,
 	}
 
 	if apiProj.Id != 0 {

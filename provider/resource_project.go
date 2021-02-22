@@ -5,8 +5,6 @@ import (
 	"github.com/cloudogu/terraform-provider-redmine/redmine"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"strconv"
 )
 
 const (
@@ -14,6 +12,7 @@ const (
 	PrjName               = "name"
 	PrjIdentifier         = "identifier"
 	PrjDescription        = "description"
+	PrjHomepage           = "homepage"
 	PrjIsPublic           = "is_public"
 	PrjParentID           = "parent_id"
 	PrjInheritMembers     = "inherit_members"
@@ -53,6 +52,11 @@ func resourceProject() *schema.Resource {
 				Optional: true,
 				Default:  "",
 			},
+			PrjHomepage: {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "",
+			},
 			PrjIsPublic: {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -66,24 +70,6 @@ func resourceProject() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
-			},
-			PrjTrackerIDs: {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional: true,
-			},
-			PrjEnabledModuleNames: {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{
-						"boards", "calendar", "documents", "files", "gantt", "issue_tracking", "news", "repository", "time_tracking", "wiki",
-					},
-						false),
-				},
-				Optional: true,
 			},
 			PrjUpdatedOn: {
 				Type:     schema.TypeString,
@@ -191,12 +177,6 @@ func projectSetToState(project *redmine.Project, d *schema.ResourceData) diag.Di
 	if err := d.Set(PrjInheritMembers, project.InheritMembers); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set(PrjTrackerIDs, project.TrackerIDs); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set(PrjEnabledModuleNames, project.EnabledModuleNames); err != nil {
-		return diag.FromErr(err)
-	}
 	if err := d.Set(PrjUpdatedOn, project.UpdatedOn); err != nil {
 		return diag.FromErr(err)
 	}
@@ -209,36 +189,12 @@ func projectFromState(d *schema.ResourceData) *redmine.Project {
 	project.Name = d.Get(PrjName).(string)
 	project.Identifier = d.Get(PrjIdentifier).(string)
 	project.Description = d.Get(PrjDescription).(string)
+	project.Homepage = d.Get(PrjHomepage).(string)
 	project.IsPublic = d.Get(PrjIsPublic).(bool)
 	project.ParentID = d.Get(PrjParentID).(string)
 	project.InheritMembers = d.Get(PrjInheritMembers).(bool)
-	println(18, d.Get(PrjTrackerIDs).([]interface{}))
-	project.TrackerIDs = toIntSlice(d.Get(PrjTrackerIDs).([]interface{}))
-	println(19)
-	project.EnabledModuleNames = toStringSlice(d.Get(PrjEnabledModuleNames).([]interface{}))
-	println(10)
 	project.UpdatedOn = d.Get(PrjUpdatedOn).(string)
 	println(11)
 
 	return project
-}
-
-func toStringSlice(slice []interface{}) []string {
-	result := make([]string, len(slice))
-	for _, item := range slice {
-		resultItem := item.(string)
-		result = append(result, resultItem)
-	}
-
-	return result
-}
-
-func toIntSlice(slice []interface{}) []int {
-	result := make([]int, len(slice))
-	for _, item := range slice {
-		resultItem, _ := strconv.Atoi(item.(string))
-		result = append(result, resultItem)
-	}
-
-	return result
 }

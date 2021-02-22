@@ -24,13 +24,12 @@ provider "redmine" {
 */
 
 resource "redmine_project" "project1" {
+  identifier = "exampleproject1"
   name = "example project"
-  identifier = "example project"
-  description = "this is an example project"
+  description = "this is an example project."
+  homepage = "https://cloudogu.com/"
   is_public = false
   inherit_members = true
-  tracker_ids = [ "1", "2" ]
-  enabled_module_names = [ "issue_tracking", "time_tracking" ]
 }
 
 //resource "redmine_issue" "issue1" {
