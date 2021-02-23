@@ -183,7 +183,11 @@ func issueFromState(d *schema.ResourceData) *redmine.Issue {
 	issue.Description = d.Get(IssDescription).(string)
 	issue.CreatedOn = d.Get(IssCreatedOn).(string)
 	issue.UpdatedOn = d.Get(IssUpdatedOn).(string)
-	println(11)
+
+	issueID := d.Id()
+	if issueID != "" && issueID != "0" {
+		issue.ID = issueID
+	}
 
 	return issue
 }

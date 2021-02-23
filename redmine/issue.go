@@ -75,6 +75,7 @@ func wrapIssue(issue *Issue) *rmapi.Issue {
 	}
 	if issue.ParentIssueID != 0 {
 		apiIssue.Parent.Id = issue.ParentIssueID
+		apiIssue.ParentId = issue.ParentIssueID
 	}
 
 	return apiIssue
@@ -82,7 +83,7 @@ func wrapIssue(issue *Issue) *rmapi.Issue {
 
 func unwrapIssue(apiIssue *rmapi.Issue) *Issue {
 	Issue := &Issue{
-		ProjectID:   apiIssue.ProjectId,
+		ProjectID:   apiIssue.Project.Id,
 		TrackerID:   apiIssue.TrackerId,
 		Subject:     apiIssue.Subject,
 		Description: apiIssue.Description,
@@ -94,7 +95,7 @@ func unwrapIssue(apiIssue *rmapi.Issue) *Issue {
 		Issue.ID = strconv.Itoa(apiIssue.Id)
 	}
 	if apiIssue.ParentId != 0 {
-		Issue.ParentIssueID = apiIssue.ParentId
+		Issue.ParentIssueID = apiIssue.Parent.Id
 	}
 
 	return Issue
