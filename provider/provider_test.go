@@ -30,13 +30,7 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if err := os.Getenv("REDMINE_URL"); err == "" {
-		t.Fatal("REDMINE_URL must be set for acceptance tests")
-	}
-	if err := os.Getenv("REDMINE_USERNAME"); err == "" {
-		t.Fatal("REDMINE_USERNAME must be set for acceptance tests")
-	}
-	if err := os.Getenv("REDMINE_PASSWORD"); err == "" {
-		t.Fatal("REDMINE_PASSWORD must be set for acceptance tests")
+	if err := os.Getenv("REDMINE_API_TOKEN_KEY"); err == "" {
+		t.Fatal("REDMINE_API_TOKEN_KEY must be set for acceptance tests")
 	}
 }

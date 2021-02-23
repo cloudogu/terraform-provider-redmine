@@ -29,7 +29,7 @@ include build/make/clean.mk
 include build/make/digital-signature.mk
 include build/make/self-update.mk
 
-install-local: compile
+install-local: $(BINARY)
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	cp ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
@@ -37,22 +37,22 @@ install-local: compile
 package: CHANGELOG.md LICENSE README.md $(BINARY)
 	tar czf $(BINARY).tar.gz CHANGELOG.md LICENSE README.md $(BINARY)
 
-PRE_INTEGRATIONTESTS=start-local-docker-compose wait-for-redmine load-redmine-defaults
+PRE_INTEGRATIONTESTS=start-redmine
 
 .PHONY: clean-test-cache
 clean-test-cache:
 	@echo clean go testcache
 	@go clean -testcache
 
-.PHONY: acceptance-test
-acceptance-test:
-	@mkdir -p $(TARGET_DIR)/acceptance-tests
-	TF_ACC=1 REDMINE_USERNAME=admin REDMINE_PASSWORD=admin \
-	go test $(TEST) -coverprofile=$(TARGET_DIR)/acceptance-tests/coverage.out -timeout 120m
+acceptance-test: $(BINARY)
+	@TF_ACC=1 go test $(PACKAGES) -coverprofile=$(TARGET_DIR)/acceptance-tests/coverage.out -timeout 120m
 
 .PHONY: acceptance-test-local
-acceptance-test-local: start-local-docker-compose
-	@make acceptance-test
+acceptance-test-local:
+	# create non-permament env var at make runtime, see https://stackoverflow.com/a/1909390/12529534
+	$(eval apiToken :=$(shell cat ${REDMINE_API_TOKEN}))
+	@mkdir -p $(TARGET_DIR)/acceptance-tests
+	@REDMINE_API_TOKEN_KEY=${apiToken} make acceptance-test
 
 .PHONY: wait-for-redmine
 wait-for-redmine:
