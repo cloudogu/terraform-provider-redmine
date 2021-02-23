@@ -2,6 +2,7 @@ package redmine
 
 import (
 	"context"
+	"fmt"
 	rmapi "github.com/cloudogu/go-redmine"
 	"github.com/pkg/errors"
 	"strconv"
@@ -13,9 +14,14 @@ type Issue struct {
 	TrackerID     int    `json:"tracker_id"`
 	Subject       string `json:"subject"`
 	Description   string `json:"description"`
+	ParentIssueID int    `json:"parent_issue_id"`
 	CreatedOn     string `json:"created_on"`
 	UpdatedOn     string `json:"updated_on"`
-	ParentIssueID int    `json:"parent_issue_id"`
+}
+
+func (i *Issue) String() string {
+	return fmt.Sprintf("issue{ID=%s,ProjectID=%d,TrackerID=%d,Subject=%s,Description=%s,ParentIssueID=%d,CreatedOn=%s,UpdatedOn=%s}",
+		i.ID, i.ProjectID, i.TrackerID, i.Subject, i.Description, i.ParentIssueID, i.CreatedOn, i.UpdatedOn)
 }
 
 func (c *Client) CreateIssue(ctx context.Context, Issue *Issue) (*Issue, error) {
@@ -63,7 +69,9 @@ func (c *Client) DeleteIssue(ctx context.Context, name string) error {
 func wrapIssue(issue *Issue) *rmapi.Issue {
 	apiIssue := &rmapi.Issue{
 		ProjectId:   issue.ProjectID,
+		Project:     &rmapi.IdName{Id: issue.ProjectID},
 		TrackerId:   issue.TrackerID,
+		Tracker:     &rmapi.IdName{Id: issue.TrackerID},
 		Subject:     issue.Subject,
 		Description: issue.Description,
 		CreatedOn:   issue.CreatedOn,
@@ -82,9 +90,7 @@ func wrapIssue(issue *Issue) *rmapi.Issue {
 }
 
 func unwrapIssue(apiIssue *rmapi.Issue) *Issue {
-	Issue := &Issue{
-		ProjectID:   apiIssue.Project.Id,
-		TrackerID:   apiIssue.TrackerId,
+	issue := &Issue{
 		Subject:     apiIssue.Subject,
 		Description: apiIssue.Description,
 		CreatedOn:   apiIssue.CreatedOn,
@@ -92,11 +98,18 @@ func unwrapIssue(apiIssue *rmapi.Issue) *Issue {
 	}
 
 	if apiIssue.Id != 0 {
-		Issue.ID = strconv.Itoa(apiIssue.Id)
+		issue.ID = strconv.Itoa(apiIssue.Id)
 	}
-	if apiIssue.ParentId != 0 {
-		Issue.ParentIssueID = apiIssue.Parent.Id
+	if apiIssue.Parent != nil {
+		issue.ParentIssueID = apiIssue.Parent.Id
+	}
+	if apiIssue.Project != nil {
+		issue.ProjectID = apiIssue.Project.Id
 	}
 
-	return Issue
+	if apiIssue.Tracker != nil {
+		issue.TrackerID = apiIssue.Tracker.Id
+	}
+
+	return issue
 }

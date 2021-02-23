@@ -24,7 +24,7 @@ provider "redmine" {
 */
 
 resource "redmine_project" "project1" {
-  identifier = "exampleproject1"
+  identifier = "exampleproject"
   name = "example project"
   description = "this is an example project."
   homepage = "https://cloudogu.com/"
@@ -36,5 +36,5 @@ resource "redmine_issue" "issue1" {
   project_id = redmine_project.project1.id
   tracker_id = 1
   subject = "Something should be done"
-  description = "In this ticket an **important task** should be done!\n\nGo ahead!\n\n```bash\necho -n $PATH```"
+  description = "In this ticket an **important task** should be done!\n\nGo ahead!\n\n```bash\necho -n $PATH\n```"
 }

@@ -71,15 +71,7 @@ func resourceIssue() *schema.Resource {
 }
 
 func resourceIssueRead(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	issueID := d.Get(IssID).(string)
-
-	diags = append(diags, diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Read issue",
-		Detail:   "issue ID ist:" + issueID,
-	})
 
 	client := i.(IssueClient)
 	issue, err := client.ReadIssue(ctx, issueID)
@@ -94,15 +86,7 @@ func resourceIssueCreate(ctx context.Context, d *schema.ResourceData, i interfac
 	var diags diag.Diagnostics
 	client := i.(IssueClient)
 
-	issueID := d.Get(IssID).(string)
-
 	issue := issueFromState(d)
-
-	diags = append(diags, diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Create Issue",
-		Detail:   "Issue ID ist:" + issueID,
-	})
 
 	createdIssue, err := client.CreateIssue(ctx, issue)
 	if err != nil {
@@ -120,16 +104,6 @@ func resourceIssueCreate(ctx context.Context, d *schema.ResourceData, i interfac
 func resourceIssueUpdate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	client := i.(IssueClient)
-
-	issueID := d.Get(IssID).(string)
-
-	if d.HasChange(IssSubject) {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "issue has changed!",
-			Detail:   "issue ID ist:" + issueID,
-		})
-	}
 
 	issue := issueFromState(d)
 
@@ -150,6 +124,7 @@ func resourceIssueDelete(ctx context.Context, d *schema.ResourceData, i interfac
 }
 
 func issueSetToState(issue *redmine.Issue, d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
 	d.SetId(issue.ID)
 	if err := d.Set(IssProjectID, issue.ProjectID); err != nil {
 		return diag.FromErr(err)
@@ -172,7 +147,7 @@ func issueSetToState(issue *redmine.Issue, d *schema.ResourceData) diag.Diagnost
 	if err := d.Set(IssUpdatedOn, issue.UpdatedOn); err != nil {
 		return diag.FromErr(err)
 	}
-	return nil
+	return diags
 }
 
 func issueFromState(d *schema.ResourceData) *redmine.Issue {

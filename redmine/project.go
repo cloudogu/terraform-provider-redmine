@@ -35,11 +35,7 @@ func (c *Client) CreateProject(ctx context.Context, project *Project) (*Project,
 
 func (c *Client) ReadProject(ctx context.Context, id string) (project *Project, err error) {
 	idInt, _ := strconv.Atoi(id)
-	apiProj, err := c.redmineAPI.ProjectWithAdditionalFields(idInt,
-		rmapi.ProjectAdditionalFieldTrackers,
-		rmapi.ProjectAdditionalFieldIssueCategories,
-		rmapi.ProjectAdditionalFieldEnabledModules,
-		rmapi.ProjectAdditionalFieldTimeEntryActivities)
+	apiProj, err := c.redmineAPI.Project(idInt)
 	if err != nil {
 		return project, errors.Wrapf(err, "error while reading project (id %s)", id)
 	}
@@ -78,7 +74,7 @@ func wrapProject(project *Project) *rmapi.Project {
 		UpdatedOn:      project.UpdatedOn,
 	}
 
-	if project.ID != "" {
+	if project.ID != "" && project.ID != "0" {
 		apiProj.Id, _ = strconv.Atoi(project.ID)
 	}
 	if project.ParentID != "" {

@@ -8,17 +8,16 @@ import (
 )
 
 const (
-	PrjID                 = "id"
-	PrjName               = "name"
-	PrjIdentifier         = "identifier"
-	PrjDescription        = "description"
-	PrjHomepage           = "homepage"
-	PrjIsPublic           = "is_public"
-	PrjParentID           = "parent_id"
-	PrjInheritMembers     = "inherit_members"
-	PrjTrackerIDs         = "tracker_ids"
-	PrjEnabledModuleNames = "enabled_module_names"
-	PrjUpdatedOn          = "updated_on"
+	PrjID             = "id"
+	PrjName           = "name"
+	PrjIdentifier     = "identifier"
+	PrjDescription    = "description"
+	PrjHomepage       = "homepage"
+	PrjIsPublic       = "is_public"
+	PrjParentID       = "parent_id"
+	PrjInheritMembers = "inherit_members"
+	PrjCreatedOn      = "created_on"
+	PrjUpdatedOn      = "updated_on"
 )
 
 type ProjectClient interface {
@@ -71,6 +70,11 @@ func resourceProject() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			PrjCreatedOn: {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			PrjUpdatedOn: {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -81,15 +85,7 @@ func resourceProject() *schema.Resource {
 }
 
 func resourceProjectRead(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	projectID := d.Get(PrjID).(string)
-
-	diags = append(diags, diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Read Project",
-		Detail:   "Project ID ist:" + projectID,
-	})
 
 	client := i.(ProjectClient)
 	project, err := client.ReadProject(ctx, projectID)
@@ -105,12 +101,6 @@ func resourceProjectCreate(ctx context.Context, d *schema.ResourceData, i interf
 	client := i.(ProjectClient)
 
 	project := projectFromState(d)
-
-	diags = append(diags, diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Create Project",
-		Detail:   "Project ID ist:" + project.ID,
-	})
 
 	createdProject, err := client.CreateProject(ctx, project)
 	if err != nil {
@@ -128,16 +118,6 @@ func resourceProjectCreate(ctx context.Context, d *schema.ResourceData, i interf
 func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	client := i.(ProjectClient)
-
-	projectID := d.Get(PrjID).(string)
-
-	if d.HasChange(PrjName) {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Project has changed!",
-			Detail:   "Project ID ist:" + projectID,
-		})
-	}
 
 	project := projectFromState(d)
 
@@ -177,6 +157,9 @@ func projectSetToState(project *redmine.Project, d *schema.ResourceData) diag.Di
 	if err := d.Set(PrjInheritMembers, project.InheritMembers); err != nil {
 		return diag.FromErr(err)
 	}
+	if err := d.Set(PrjCreatedOn, project.CreatedOn); err != nil {
+		return diag.FromErr(err)
+	}
 	if err := d.Set(PrjUpdatedOn, project.UpdatedOn); err != nil {
 		return diag.FromErr(err)
 	}
@@ -193,8 +176,8 @@ func projectFromState(d *schema.ResourceData) *redmine.Project {
 	project.IsPublic = d.Get(PrjIsPublic).(bool)
 	project.ParentID = d.Get(PrjParentID).(string)
 	project.InheritMembers = d.Get(PrjInheritMembers).(bool)
+	project.CreatedOn = d.Get(PrjCreatedOn).(string)
 	project.UpdatedOn = d.Get(PrjUpdatedOn).(string)
-	println(11)
 
 	return project
 }
