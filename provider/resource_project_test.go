@@ -98,7 +98,7 @@ func TestAccProject_createMultipleProjects(t *testing.T) {
 	})
 }
 
-func TestAccRepositoryUpdate(t *testing.T) {
+func TestAccProjectUpdate(t *testing.T) {
 	createdOn := "updated during 1. step"
 	updatedOn := "updated during 1. and 2. step"
 	resource.Test(t, resource.TestCase{
@@ -189,7 +189,7 @@ func testAccCheckProjectDestroy(s *terraform.State) error {
 	cli := testAccProvider.Meta().(*redmine.Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "redmine_project" {
+		if rs.Type != testProjectTFResourceType {
 			continue
 		}
 
