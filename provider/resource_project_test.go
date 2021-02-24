@@ -10,7 +10,13 @@ import (
 	"testing"
 )
 
+const (
+	testProjectResourceType = "redmine_project"
+	testProjectResourceName = "testproject"
+)
+
 func TestAccProject_basic(t *testing.T) {
+	projectResource := testProjectResourceType + "." + testProjectResourceName
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
@@ -18,7 +24,7 @@ func TestAccProject_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: basicProjectWithDescription("exampleproject", "Example Project", "This is an example project"),
-				Check:  resource.TestCheckResourceAttr("redmine_project.testproject", "id", "1"),
+				Check:  resource.TestCheckResourceAttr(projectResource, "id", "1"),
 			},
 		},
 	})
@@ -48,7 +54,7 @@ func testAccCheckProjectDestroy(s *terraform.State) error {
 
 		// If the error is equivalent to 404 not found, the widget is destroyed.
 		// Otherwise return the error
-		if !strings.Contains(err.Error(), "asdf") {
+		if !strings.Contains(err.Error(), "project (id: "+projectID+") was not found") {
 			return err
 		}
 	}
@@ -57,12 +63,12 @@ func testAccCheckProjectDestroy(s *terraform.State) error {
 }
 
 func basicProjectWithDescription(identifier, name, description string) string {
-	return fmt.Sprintf(`resource "redmine_project" "testproject1" {
+	return fmt.Sprintf(`resource "%s" "%s" {
   identifier = "%s"
   name = "%s"
   description = "%s"
   homepage = "https://cloudogu.com/"
   is_public = false
   inherit_members = true
-}`, identifier, name, description)
+}`, testProjectResourceType, testProjectResourceName, identifier, name, description)
 }
