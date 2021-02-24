@@ -20,10 +20,16 @@ const (
 	PrjUpdatedOn      = "updated_on"
 )
 
+// ProjectClient provides methods for reading and modifying Redmine projects.
 type ProjectClient interface {
+	// CreateProject creates a project.
 	CreateProject(ctx context.Context, project *redmine.Project) (*redmine.Project, error)
-	ReadProject(ctx context.Context, identifier string) (*redmine.Project, error)
+	// ReadProject reads a project identified by the id. The id must not be empty string or "0".
+	ReadProject(ctx context.Context, id string) (*redmine.Project, error)
+	// UpdateProject updates an existing project.
 	UpdateProject(ctx context.Context, project *redmine.Project) (*redmine.Project, error)
+	// DeleteProject deletes a project identified by the id. The id must not be empty string or "0".
+	DeleteProject(ctx context.Context, id string) error
 }
 
 func resourceProject() *schema.Resource {
@@ -134,6 +140,14 @@ func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, i interf
 
 func resourceProjectDelete(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
+	client := i.(ProjectClient)
+
+	projectID := d.Id()
+	err := client.DeleteProject(ctx, projectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

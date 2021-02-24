@@ -25,7 +25,7 @@ func (c *Client) CreateProject(ctx context.Context, project *Project) (*Project,
 
 	actualAPIProject, err := c.redmineAPI.CreateProject(*apiProj)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error while creating project (id %s)", project.ID)
+		return nil, errors.Wrapf(err, "error while creating project (id: %s, identifier: %s)", project.ID, project.Identifier)
 	}
 
 	actualProject := unwrapProject(actualAPIProject)
@@ -34,10 +34,14 @@ func (c *Client) CreateProject(ctx context.Context, project *Project) (*Project,
 }
 
 func (c *Client) ReadProject(ctx context.Context, id string) (project *Project, err error) {
-	idInt, _ := strconv.Atoi(id)
+	idInt, err := verifyIDtoInt(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not read project because of malformed input data")
+	}
+
 	apiProj, err := c.redmineAPI.Project(idInt)
 	if err != nil {
-		return project, errors.Wrapf(err, "error while reading project (id %s)", id)
+		return project, errors.Wrapf(err, "error while reading project (id: %d)", idInt)
 	}
 
 	project = unwrapProject(apiProj)
@@ -50,7 +54,7 @@ func (c *Client) UpdateProject(ctx context.Context, project *Project) (updatedPr
 
 	err = c.redmineAPI.UpdateProject(apiProj)
 	if err != nil {
-		return project, errors.Wrapf(err, "error while updating project (id %d)", apiProj.Id)
+		return project, errors.Wrapf(err, "error while updating project (id: %s, identifier: %s)", project.ID, project.Identifier)
 	}
 
 	project = unwrapProject(&apiProj)
@@ -58,8 +62,19 @@ func (c *Client) UpdateProject(ctx context.Context, project *Project) (updatedPr
 	return project, nil
 }
 
-func (c *Client) DeleteProject(ctx context.Context, name string) error {
+func (c *Client) DeleteProject(ctx context.Context, id string) error {
+	idInt, err := verifyIDtoInt(id)
+	if err != nil {
+		return errors.Wrap(err, "could not delete project because of malformed input data")
+	}
+
+	err = c.redmineAPI.DeleteProject(idInt)
+	if err != nil {
+		return errors.Wrapf(err, "error while deleteting project (id: %d)", idInt)
+	}
+
 	return nil
+
 }
 
 func wrapProject(project *Project) *rmapi.Project {

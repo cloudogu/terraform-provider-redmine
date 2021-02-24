@@ -18,10 +18,16 @@ const (
 	IssUpdatedOn     = "updated_on"
 )
 
+// IssueClient provides methods for reading and modifying Redmine issues.
 type IssueClient interface {
+	// CreateIssue creates an issue.
 	CreateIssue(ctx context.Context, issue *redmine.Issue) (*redmine.Issue, error)
+	// ReadIssue reads an issue identified by the id. The id must not be empty string or "0".
 	ReadIssue(ctx context.Context, id string) (*redmine.Issue, error)
+	// UpdateIssue updates an existing issue.
 	UpdateIssue(ctx context.Context, issue *redmine.Issue) (*redmine.Issue, error)
+	// DeleteIssue deletes an issue identified by the id. The id must not be empty string or "0".
+	DeleteIssue(ctx context.Context, id string) error
 }
 
 func resourceIssue() *schema.Resource {
@@ -120,6 +126,14 @@ func resourceIssueUpdate(ctx context.Context, d *schema.ResourceData, i interfac
 
 func resourceIssueDelete(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
+	client := i.(IssueClient)
+
+	issueID := d.Id()
+	err := client.DeleteIssue(ctx, issueID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

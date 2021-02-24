@@ -24,24 +24,28 @@ func (i *Issue) String() string {
 		i.ID, i.ProjectID, i.TrackerID, i.Subject, i.Description, i.ParentIssueID, i.CreatedOn, i.UpdatedOn)
 }
 
-func (c *Client) CreateIssue(ctx context.Context, Issue *Issue) (*Issue, error) {
-	apiIssue := wrapIssue(Issue)
+func (c *Client) CreateIssue(ctx context.Context, issue *Issue) (*Issue, error) {
+	apiIssue := wrapIssue(issue)
 
-	actualAPIIssue, err := c.redmineAPI.CreateIssue(*apiIssue)
+	createdAPIIssue, err := c.redmineAPI.CreateIssue(*apiIssue)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error while creating Issue (id %s)", Issue.ID)
+		return nil, errors.Wrapf(err, "error while creating issue (id: %s, subject: %s)", issue.ID, issue.Subject)
 	}
 
-	actualIssue := unwrapIssue(actualAPIIssue)
+	actualIssue := unwrapIssue(createdAPIIssue)
 
 	return actualIssue, nil
 }
 
 func (c *Client) ReadIssue(ctx context.Context, id string) (Issue *Issue, err error) {
-	idInt, _ := strconv.Atoi(id)
+	idInt, err := verifyIDtoInt(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not read issue because of malformed input data")
+	}
+
 	apiIssue, err := c.redmineAPI.Issue(idInt)
 	if err != nil {
-		return Issue, errors.Wrapf(err, "error while reading Issue (id %s)", id)
+		return Issue, errors.Wrapf(err, "error while reading issue (id: %d)", idInt)
 	}
 
 	Issue = unwrapIssue(apiIssue)
@@ -49,20 +53,36 @@ func (c *Client) ReadIssue(ctx context.Context, id string) (Issue *Issue, err er
 	return Issue, nil
 }
 
-func (c *Client) UpdateIssue(ctx context.Context, Issue *Issue) (updatedIssue *Issue, err error) {
-	apiIssue := *wrapIssue(Issue)
+func (c *Client) UpdateIssue(ctx context.Context, issue *Issue) (updatedIssue *Issue, err error) {
+	_, err = verifyIDtoInt(issue.ID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not update issue (id: %s, subject: %s) because of malformed input data",
+			issue.ID, issue.Subject)
+	}
+
+	apiIssue := *wrapIssue(issue)
 
 	err = c.redmineAPI.UpdateIssue(apiIssue)
 	if err != nil {
-		return Issue, errors.Wrapf(err, "error while updating Issue (id %d)", apiIssue.Id)
+		return issue, errors.Wrapf(err, "error while updating issue (id: %d, subject: %s)", apiIssue.Id, issue.Subject)
 	}
 
-	Issue = unwrapIssue(&apiIssue)
+	issue = unwrapIssue(&apiIssue)
 
-	return Issue, nil
+	return issue, nil
 }
 
-func (c *Client) DeleteIssue(ctx context.Context, name string) error {
+func (c *Client) DeleteIssue(ctx context.Context, id string) error {
+	idInt, err := verifyIDtoInt(id)
+	if err != nil {
+		return errors.Wrap(err, "could not delete issue because of malformed input data")
+	}
+
+	err = c.redmineAPI.DeleteIssue(idInt)
+	if err != nil {
+		return errors.Wrapf(err, "error while deleteting issue (id: %d)", idInt)
+	}
+
 	return nil
 }
 
