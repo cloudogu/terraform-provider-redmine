@@ -13,7 +13,8 @@ import (
 func TestAccProject_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviders, CheckDestroy: testAccCheckProjectDestroy,
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: basicProjectWithDescription("exampleproject", "Example Project", "This is an example project"),

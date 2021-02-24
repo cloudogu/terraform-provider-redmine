@@ -11,7 +11,7 @@ include build/make/variables.mk
 
 DEFAULT_ADMIN_CREDENTIALS=admin:admin
 REDMINE_URL=http://localhost:8080
-REDMINE_API_TOKEN=${TARGET_DIR}/redmineAPIToken.txt
+REDMINE_API_TOKEN_FILE=${TARGET_DIR}/redmineAPIToken.txt
 
 TEST?=$$(go list ./... | grep -v 'vendor')
 
@@ -49,10 +49,10 @@ acceptance-test: $(BINARY)
 
 .PHONY: acceptance-test-local
 acceptance-test-local:
-	# create non-permament env var at make runtime, see https://stackoverflow.com/a/1909390/12529534
-	$(eval apiToken :=$(shell cat ${REDMINE_API_TOKEN}))
+	@# create non-permanent env var at make runtime, see https://stackoverflow.com/a/1909390/12529534
+	$(eval apiToken :=$(shell cat ${REDMINE_API_TOKEN_FILE}))
 	@mkdir -p $(TARGET_DIR)/acceptance-tests
-	@REDMINE_API_TOKEN_KEY=${apiToken} make acceptance-test
+	@REDMINE_API_KEY=${apiToken} make acceptance-test
 
 .PHONY: wait-for-redmine
 wait-for-redmine:
@@ -93,7 +93,7 @@ install-sqlite-client:
 .PHONY fetch-api-token:
 fetch-api-token: ${TARGET_DIR}
 	@echo "Fetching API token"
-	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | jq -r .user.api_key > ${REDMINE_API_TOKEN}
+	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | jq -r .user.api_key > ${REDMINE_API_TOKEN_FILE}
 
 .PHONY start-redmine:
 start-redmine:
