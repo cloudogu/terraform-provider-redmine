@@ -7,4 +7,5 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.1
 	github.com/hashicorp/terraform-plugin-test v1.4.4 // indirect
 	github.com/pkg/errors v0.8.1
+	github.com/stretchr/testify v1.7.0
 )
