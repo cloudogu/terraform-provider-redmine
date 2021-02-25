@@ -29,6 +29,9 @@ const (
 
 func TestAccIssue_createBasic(t *testing.T) {
 	projectResourceIDReference := testProjectTFResource + ".id"
+	tfProjectAndIssueBlocks := basicProjectWithDescription("testproject", "project", "a project") +
+		"\n" +
+		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -36,8 +39,7 @@ func TestAccIssue_createBasic(t *testing.T) {
 		CheckDestroy:      testAccCheckIssueDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-					issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue"),
+				Config: tfProjectAndIssueBlocks,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyID, "1"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyProjectID, "1"),
@@ -53,43 +55,45 @@ func TestAccIssue_createBasic(t *testing.T) {
 	})
 }
 
-// func TestAccIssue_createMultipleIssues(t *testing.T) {
-// 	const project2Name = "project2"
-// 	const project2TFResource = testIssueTFResourceType + "." + project2Name
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheck(t) },
-// 		ProviderFactories: testAccProviders,
-// 		CheckDestroy:      testAccCheckIssueDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: basicIssueWithDescription(issValueIdentifier, issValueName, "This is an example project") + "\n" +
-// 						issueAsJSON(project2Name, "anotherident", "Another project", "Yet another project",
-// 							"https://www.example.com/", true, false),
-// 				Check: resource.ComposeAggregateTestCheckFunc(
-// 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyIdentifier, issValueIdentifier),
-// 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyName, issValueName),
-// 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentID, ""),
-// 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example project"),
-// 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyHomepage, issValueHomepage),
-// 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyIsPublic, "false"),
-// 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyInheritMembers, "true"),
-// 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
-// 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
-// 					// check 2nd project
-// 					resource.TestCheckResourceAttr(project2TFResource, issKeyIdentifier, "anotherident"),
-// 					resource.TestCheckResourceAttr(project2TFResource, issKeyName, "Another project"),
-// 					resource.TestCheckResourceAttr(project2TFResource, issKeyParentID, ""),
-// 					resource.TestCheckResourceAttr(project2TFResource, issKeyDescription, "Yet another project"),
-// 					resource.TestCheckResourceAttr(project2TFResource, issKeyHomepage, "https://www.example.com/"),
-// 					resource.TestCheckResourceAttr(project2TFResource, issKeyIsPublic, "true"),
-// 					resource.TestCheckResourceAttr(project2TFResource, issKeyInheritMembers, "false"),
-// 					resource.TestCheckResourceAttrSet(project2TFResource, issKeyCreatedOn),
-// 					resource.TestCheckResourceAttrSet(project2TFResource, issKeyUpdatedOn),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+func TestAccIssue_createMultipleIssuesToTheSameProject(t *testing.T) {
+	projectResourceIDReference := testProjectTFResource + ".id"
+
+	tfProjectAndIssueBlocks := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
+		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue") + "\n" +
+		issueAsJSON("another_issue", projectResourceIDReference, 1, "issue subject2", "This is an example issue2")
+	testIssueTFRessourceName2 := testIssueTFResourceType + "." + "another_issue"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckIssueDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tfProjectAndIssueBlocks,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyID, "1"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyProjectID, "1"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyTrackerID, "2"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeySubject, "issue subject"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
+					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
+					// check 2nd issue
+					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyID, "2"),
+					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyProjectID, "1"),
+					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyTrackerID, "1"),
+					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeySubject, "issue subject2"),
+					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyDescription, "This is an example issue2"),
+					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttrSet(testIssueTFRessourceName2, issKeyCreatedOn),
+					resource.TestCheckResourceAttrSet(testIssueTFRessourceName2, issKeyUpdatedOn),
+				),
+			},
+		},
+	})
+}
+
 //
 // func TestAccIssueUpdate(t *testing.T) {
 // 	createdOn := "updated during 1. step"
