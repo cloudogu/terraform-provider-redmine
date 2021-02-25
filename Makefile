@@ -12,7 +12,7 @@ include build/make/variables.mk
 DEFAULT_ADMIN_CREDENTIALS=admin:admin
 REDMINE_URL?=http://localhost:8080
 REDMINE_CONTAINERNAME?=terraform-provider-redmine_redmine_1
-REDMINE_API_TOKEN_FILE=${TARGET_DIR}/redmineAPIToken.txt
+REDMINE_API_TOKEN_FILE=examples/api_token.auto.tfvars
 ACCEPTANCE_TEST_DIR=$(TARGET_DIR)/acceptance-test
 
 .DEFAULT_GOAL:=compile
@@ -99,7 +99,7 @@ install-sqlite-client:
 .PHONY fetch-api-token:
 fetch-api-token: ${TARGET_DIR}
 	@echo "Fetching API token"
-	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | jq -r .user.api_key > ${REDMINE_API_TOKEN_FILE}
+	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | jq -r .user.api_key | sed -re "s/(.*)/apikey = \"\1\"/" > ${REDMINE_API_TOKEN_FILE}
 
 .PHONY start-redmine:
 start-redmine:

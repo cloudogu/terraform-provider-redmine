@@ -8,10 +8,10 @@ terraform {
 
 provider "redmine" {
   url = "http://localhost:8080"
-  username = "admin"
-  password = "admin"
+  username = var.username
+  password = var.password
   skip_cert_verify = true
-  api_key = "f4ed669a723ebe1be8052dd1848ed72c80b1b5be"
+  api_key = var.apikey
 }
 
 /*
