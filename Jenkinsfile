@@ -50,6 +50,7 @@ node('docker') {
                         ]) {
                             make("acceptance-test")
                             archiveArtifacts 'target/acceptance-tests/*.out'
+                            junit allowEmptyResults: true, testResults: 'target/acceptance-tests/*.xml'
                         }
                     }
 

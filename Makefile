@@ -13,8 +13,8 @@ DEFAULT_ADMIN_CREDENTIALS=admin:admin
 REDMINE_URL?=http://localhost:3000
 REDMINE_CONTAINERNAME?=terraform-provider-redmine_redmine_1
 REDMINE_API_TOKEN_FILE=examples/api_token.auto.tfvars
-ACCEPTANCE_TEST_DIR=$(TARGET_DIR)/acceptance-test
-ACCEPTANCE_TEST_LOG=${ACCEPTANCE_TEST_DIR}/acc.test.log
+ACCEPTANCE_TEST_DIR=$(TARGET_DIR)/acceptance-tests
+ACCEPTANCE_TEST_LOG=${ACCEPTANCE_TEST_DIR}/acceptance.test.log
 ACCEPTANCE_TEST_JUNIT=${ACCEPTANCE_TEST_LOG}.xml
 
 .DEFAULT_GOAL:=compile
