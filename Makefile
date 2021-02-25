@@ -14,8 +14,6 @@ REDMINE_URL?=http://localhost:8080
 REDMINE_API_TOKEN_FILE=${TARGET_DIR}/redmineAPIToken.txt
 ACCEPTANCE_TEST_DIR=$(TARGET_DIR)/acceptance-test
 
-TEST?=$$(go list ./... | grep -v 'vendor')
-
 .DEFAULT_GOAL:=compile
 ADDITIONAL_CLEAN=clean-test-cache
 TF_ADDITIONAL_ENVS=
@@ -49,7 +47,7 @@ clean-test-cache:
 	@go clean -testcache
 
 acceptance-test: $(BINARY) $(ACCEPTANCE_TEST_DIR)
-	@TF_ACC=1 go test $(PACKAGES) -coverprofile=$(TARGET_DIR)/acceptance-tests/coverage.out -timeout 120m
+	@TF_ACC=1 go test $(PACKAGES) -coverprofile=$(ACCEPTANCE_TEST_DIR)/coverage.out -timeout 120m
 
 .PHONY: acceptance-test-local
 acceptance-test-local: $(ACCEPTANCE_TEST_DIR)
@@ -58,6 +56,7 @@ acceptance-test-local: $(ACCEPTANCE_TEST_DIR)
 	@REDMINE_API_KEY=${apiToken} ${TF_ADDITIONAL_ENVS} make acceptance-test
 
 $(ACCEPTANCE_TEST_DIR):
+	@echo "create acceptance-test directory"
 	@mkdir -p $(ACCEPTANCE_TEST_DIR)
 
 .PHONY: wait-for-redmine
