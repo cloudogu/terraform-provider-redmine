@@ -17,6 +17,9 @@ TEST?=$$(go list ./... | grep -v 'vendor')
 
 .DEFAULT_GOAL:=compile
 ADDITIONAL_CLEAN=clean-test-cache
+TF_ADDITIONAL_ENVS=
+# enable to show log.Printf statements in acceptance tests (only shown if tests fail)
+#TF_ACC_ADDITIONAL_ENVS=TF_LOG=TRACE
 
 include build/make/info.mk
 include build/make/dependencies-gomod.mk
@@ -52,7 +55,7 @@ acceptance-test-local:
 	@# create non-permanent env var at make runtime, see https://stackoverflow.com/a/1909390/12529534
 	$(eval apiToken :=$(shell cat ${REDMINE_API_TOKEN_FILE}))
 	@mkdir -p $(TARGET_DIR)/acceptance-tests
-	@REDMINE_API_KEY=${apiToken} make acceptance-test
+	@REDMINE_API_KEY=${apiToken} ${TF_ADDITIONAL_ENVS} make acceptance-test
 
 .PHONY: wait-for-redmine
 wait-for-redmine:

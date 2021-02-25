@@ -5,6 +5,7 @@ import (
 	"github.com/cloudogu/terraform-provider-redmine/redmine"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
 )
 
 const (
@@ -85,6 +86,8 @@ func resourceIssueRead(ctx context.Context, d *schema.ResourceData, i interface{
 		return diag.FromErr(err)
 	}
 
+	log.Printf("issue read id %s, project %d", issue.ID, issue.ProjectID)
+
 	return issueSetToState(issue, d)
 }
 
@@ -100,6 +103,8 @@ func resourceIssueCreate(ctx context.Context, d *schema.ResourceData, i interfac
 	}
 
 	d.SetId(createdIssue.ID)
+
+	log.Printf("issue create id %s, project %d", issue.ID, issue.ProjectID)
 
 	diagRead := resourceIssueRead(ctx, d, i)
 	diags = append(diags, diagRead...)
@@ -118,6 +123,8 @@ func resourceIssueUpdate(ctx context.Context, d *schema.ResourceData, i interfac
 		return diag.FromErr(err)
 	}
 
+	log.Printf("issue update id %s, project %d", issue.ID, issue.ProjectID)
+
 	diagRead := resourceIssueRead(ctx, d, i)
 	diags = append(diags, diagRead...)
 
@@ -133,6 +140,8 @@ func resourceIssueDelete(ctx context.Context, d *schema.ResourceData, i interfac
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	log.Printf("issue delete id %s", issueID)
 
 	return diags
 }
