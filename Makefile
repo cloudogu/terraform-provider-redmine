@@ -10,7 +10,7 @@ NAME=redmine
 include build/make/variables.mk
 
 DEFAULT_ADMIN_CREDENTIALS=admin:admin
-REDMINE_URL=http://localhost:8080
+REDMINE_URL?=http://localhost:8080
 REDMINE_API_TOKEN_FILE=${TARGET_DIR}/redmineAPIToken.txt
 
 TEST?=$$(go list ./... | grep -v 'vendor')
