@@ -10,7 +10,7 @@ NAME=redmine
 include build/make/variables.mk
 
 DEFAULT_ADMIN_CREDENTIALS=admin:admin
-REDMINE_URL?=http://localhost:8080
+REDMINE_URL?=http://localhost:3000
 REDMINE_CONTAINERNAME?=terraform-provider-redmine_redmine_1
 REDMINE_API_TOKEN_FILE=examples/api_token.auto.tfvars
 ACCEPTANCE_TEST_DIR=$(TARGET_DIR)/acceptance-test

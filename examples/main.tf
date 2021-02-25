@@ -7,7 +7,7 @@ terraform {
 }
 
 provider "redmine" {
-  url = "http://localhost:8080"
+  url = "http://localhost:3000"
   username = var.username
   password = var.password
   skip_cert_verify = true

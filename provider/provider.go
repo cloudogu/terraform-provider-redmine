@@ -14,7 +14,7 @@ func Provider() *schema.Provider {
 			"url": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("REDMINE_URL", "http://localhost:8080/"),
+				DefaultFunc: schema.EnvDefaultFunc("REDMINE_URL", "http://localhost:3000/"),
 			},
 			"username": {
 				Type:        schema.TypeString,

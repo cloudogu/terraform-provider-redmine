@@ -1,5 +1,5 @@
 #!groovy
-@Library(['github.com/cloudogu/zalenium-build-lib@v2.1.0'])
+@Library(['github.com/cloudogu/zalenium-build-lib@v2.1.0']) _
 import com.cloudogu.ces.zaleniumbuildlib.*
 
 node('docker') {
@@ -10,13 +10,24 @@ node('docker') {
             checkout scm
         }
 
+        def redmineFilesDir="${WORKSPACE}/redmine-files"
+        sh "mkdir -p ${redmineFilesDir}"
         def redmineImage = docker.image('redmine:4.1.1-alpine')
-        def redmineContainerName = "${JOB_BASE_NAME}-${BUILD_NUMBER}".replaceAll("\\/|%2[fF]", "-")
+        def redmineContainerName = "tf-provider-redmine-${JOB_BASE_NAME}-${BUILD_NUMBER}".replaceAll("\\/|%2[fF]", "-").toLowerCase()
+
         withDockerNetwork { buildnetwork ->
-            redmineImage.withRun("--network ${buildnetwork} --name ${redmineContainerName} -p 8080:3000") {
+            redmineImage.withRun("--network ${buildnetwork} --name ${redmineContainerName} " +
+                    "-e REDMINE_SECRET_KEY_BASE=supersecretkey " +
+                    "-v ${WORKSPACE}/docker-compose/settings.yml:/usr/src/redmine/config/settings.yml " +
+                    "-v ${redmineFilesDir}:/usr/src/redmine/files") { redmineContainer ->
+                def redmineIP=findIp(redmineContainer)
+                withEnv(["REDMINE_URL=http://${redmineIP}:${redmineContainerPortHost}/",
+                         "REDMINE_CONTAINER_NAME=${redmineContainer.id}"]) {
+                    make("wait-for-redmine load-redmine-defaults mark-admin-password-as-changed fetch-api-token")
+                }
+                sh "docker logs ${redmineContainer.id}"
 
                 docker.image('golang:1.14.13').inside("--network ${buildnetwork} -e HOME=/tmp") {
-
                     stage('Build') {
                         make 'clean package checksum'
                         archiveArtifacts 'target/*'
@@ -32,10 +43,9 @@ node('docker') {
                     }
 
                     stage('Acceptance Tests') {
-                        withEnv(["REDMINE_URL=http://${redmineContainerName}:8080/",
-                                "REDMINE_CONTAINER_NAME=${redmineContainerName}"
+                        withEnv(["REDMINE_URL=http://${redmineIP}:3000/",
+                                 "REDMINE_CONTAINER_NAME=${redmineContainer.id}"
                         ]) {
-                            make("wait-for-redmine load-redmine-defaults mark-admin-password-as-changed fetch-api-token")
                             make("acceptance-test")
                             archiveArtifacts 'target/acceptance-tests/*.out'
                         }
@@ -73,4 +83,9 @@ node('docker') {
 
 void make(String goal) {
     sh "make ${goal}"
+}
+
+String findIp(container) {
+    def containerIP = sh (returnStdout: true, script: "docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${container.id}")
+    return containerIP.trim()
 }
