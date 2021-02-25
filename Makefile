@@ -14,7 +14,8 @@ REDMINE_URL?=http://localhost:3000
 REDMINE_CONTAINERNAME?=terraform-provider-redmine_redmine_1
 REDMINE_API_TOKEN_FILE=examples/api_token.auto.tfvars
 ACCEPTANCE_TEST_DIR=$(TARGET_DIR)/acceptance-test
-ACCEPTANCE_REPORT=""
+ACCEPTANCE_TEST_LOG=${ACCEPTANCE_TEST_DIR}/acc.test.log
+ACCEPTANCE_TEST_JUNIT=${ACCEPTANCE_TEST_LOG}.xml
 
 .DEFAULT_GOAL:=compile
 ADDITIONAL_CLEAN=clean-test-cache
@@ -49,7 +50,11 @@ clean-test-cache:
 	@go clean -testcache
 
 acceptance-test: $(BINARY) $(ACCEPTANCE_TEST_DIR) api-token-to-var
-	@REDMINE_API_KEY=${API_TOKEN} TF_ACC=1 go test $(PACKAGES) -coverprofile=$(ACCEPTANCE_TEST_DIR)/coverage.out -timeout 120m
+	@REDMINE_API_KEY=${API_TOKEN} TF_ACC=1 go test -v ./... -coverprofile=$(ACCEPTANCE_TEST_DIR)/coverage.out -timeout 120m 2>&1 | tee $(ACCEPTANCE_TEST_LOG)
+	@cat $(ACCEPTANCE_TEST_LOG) | go-junit-report > ${ACCEPTANCE_TEST_JUNIT}
+	@if grep '^FAIL' $(ACCEPTANCE_TEST_JUNIT); then \
+		exit 1; \
+	fi
 
 .PHONY: acceptance-test-local
 acceptance-test-local: $(ACCEPTANCE_TEST_DIR)
