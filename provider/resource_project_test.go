@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 	"time"
@@ -35,7 +36,7 @@ const (
 	prjKeyUpdatedOn      = "updated_on"
 )
 
-func TestAccProject_createBasic(t *testing.T) {
+func TestAccProjectCreate_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
@@ -60,7 +61,7 @@ func TestAccProject_createBasic(t *testing.T) {
 	})
 }
 
-func TestAccProject_createMultipleProjects(t *testing.T) {
+func TestAccProjectCreate_multipleProjects(t *testing.T) {
 	const project2Name = "project2"
 	const project2TFResource = testProjectTFResourceType + "." + project2Name
 	resource.Test(t, resource.TestCase{
@@ -73,6 +74,7 @@ func TestAccProject_createMultipleProjects(t *testing.T) {
 					genericProjectAsJSON(project2Name, "anotherident", "Another project", "Yet another project",
 						"https://www.example.com/", true, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					// do not test id's here because creation sequence is not guaranteed
 					resource.TestCheckResourceAttr(testProjectTFResource, prjKeyIdentifier, prjValueIdentifier),
 					resource.TestCheckResourceAttr(testProjectTFResource, prjKeyName, prjValueName),
 					resource.TestCheckResourceAttr(testProjectTFResource, prjKeyParentID, ""),
@@ -83,6 +85,7 @@ func TestAccProject_createMultipleProjects(t *testing.T) {
 					resource.TestCheckResourceAttrSet(testProjectTFResource, prjKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testProjectTFResource, prjKeyUpdatedOn),
 					// check 2nd project
+					// do not test id's here because creation sequence is not guaranteed
 					resource.TestCheckResourceAttr(project2TFResource, prjKeyIdentifier, "anotherident"),
 					resource.TestCheckResourceAttr(project2TFResource, prjKeyName, "Another project"),
 					resource.TestCheckResourceAttr(project2TFResource, prjKeyParentID, ""),
@@ -137,13 +140,13 @@ func TestAccProjectUpdate(t *testing.T) {
 						is := rs.Primary
 
 						actualCreatedOn := is.Attributes[prjKeyCreatedOn]
-						if err := assertNotEqual(prjKeyCreatedOn, createdOn, actualCreatedOn); err != nil {
+						if err := assertEqual(prjKeyCreatedOn, createdOn, actualCreatedOn); err != nil {
 							return err
 						}
 						createdOn = is.Attributes[prjKeyCreatedOn]
 
 						actualUpdatedOn := is.Attributes[prjKeyUpdatedOn]
-						if err := assertEqual(prjKeyUpdatedOn, updatedOn, actualUpdatedOn); err != nil {
+						if err := assertNotEqual(prjKeyUpdatedOn, updatedOn, actualUpdatedOn); err != nil {
 							return err
 						}
 						updatedOn = is.Attributes[prjKeyUpdatedOn]
@@ -169,12 +172,12 @@ func TestAccProjectUpdate(t *testing.T) {
 						is := rs.Primary
 
 						actualCreatedOn := is.Attributes[prjKeyCreatedOn]
-						if err := assertNotEqual(prjKeyCreatedOn, createdOn, actualCreatedOn); err != nil {
+						if err := assertEqual(prjKeyCreatedOn, createdOn, actualCreatedOn); err != nil {
 							return err
 						}
 
 						actualUpdatedOn := is.Attributes[prjKeyUpdatedOn]
-						if err := assertEqual(prjKeyUpdatedOn, updatedOn, actualUpdatedOn); err != nil {
+						if err := assertNotEqual(prjKeyUpdatedOn, updatedOn, actualUpdatedOn); err != nil {
 							return err
 						}
 						return nil
@@ -234,20 +237,28 @@ func genericProjectAsJSON(tfName, identifier, name, description, homepage string
 		identifier, name, description, homepage, isPublic, inheritMembers)
 }
 
-func assertEqual(resourceField string, expected, actual interface{}) error {
+func assertNotEqual(resourceField string, expected, actual interface{}) error {
 	if assert.ObjectsAreEqual(expected, actual) {
-		return fmt.Errorf("Not equal: %s\n"+
+		return fmt.Errorf("field value %s expected to be not equal:\n"+
 			"expected: %s\n"+
 			"actual  : %s", resourceField, expected, actual)
 	}
 	return nil
 }
 
-func assertNotEqual(resourceField string, expected, actual interface{}) error {
+func assertEqual(resourceField string, expected, actual interface{}) error {
 	if !assert.ObjectsAreEqual(expected, actual) {
-		return fmt.Errorf("equal: %s\n"+
+		return fmt.Errorf("field value %s expected to be equal:\n"+
 			"expected: %s\n"+
 			"actual  : %s", resourceField, expected, actual)
 	}
 	return nil
+}
+
+func TestOwnAssertions(t *testing.T) {
+	require.NoError(t, assertEqual("fieldname", "value1", "value1"))
+	require.Error(t, assertEqual("fieldname", "value1", "value2"))
+	require.NoError(t, assertNotEqual("fieldname", "value1", "value2"))
+	require.Error(t, assertNotEqual("fieldname", "value1", "value1"))
+
 }
