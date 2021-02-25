@@ -14,6 +14,7 @@ REDMINE_URL?=http://localhost:3000
 REDMINE_CONTAINERNAME?=terraform-provider-redmine_redmine_1
 REDMINE_API_TOKEN_FILE=examples/api_token.auto.tfvars
 ACCEPTANCE_TEST_DIR=$(TARGET_DIR)/acceptance-test
+ACCEPTANCE_REPORT=""
 
 .DEFAULT_GOAL:=compile
 ADDITIONAL_CLEAN=clean-test-cache
@@ -47,14 +48,18 @@ clean-test-cache:
 	@echo clean go testcache
 	@go clean -testcache
 
-acceptance-test: $(BINARY) $(ACCEPTANCE_TEST_DIR)
-	@TF_ACC=1 go test $(PACKAGES) -coverprofile=$(ACCEPTANCE_TEST_DIR)/coverage.out -timeout 120m
+acceptance-test: $(BINARY) $(ACCEPTANCE_TEST_DIR) api-token-to-var
+	@REDMINE_API_KEY=${API_TOKEN} TF_ACC=1 go test $(PACKAGES) -coverprofile=$(ACCEPTANCE_TEST_DIR)/coverage.out -timeout 120m
 
 .PHONY: acceptance-test-local
 acceptance-test-local: $(ACCEPTANCE_TEST_DIR)
+	@${TF_ADDITIONAL_ENVS} make acceptance-test
+
+.PHONY: api-token-to-var
+api-token-to-var: fetch-api-token
 	@# create non-permanent env var at make runtime, see https://stackoverflow.com/a/1909390/12529534
-	$(eval apiToken :=$(shell sed -re 's/apikey = "(.*)"/\1/' ${REDMINE_API_TOKEN_FILE}))
-	@REDMINE_API_KEY=${apiToken} ${TF_ADDITIONAL_ENVS} make acceptance-test
+	$(eval API_TOKEN :=$(shell sed -re 's/apikey = "(.*)"/\1/' ${REDMINE_API_TOKEN_FILE}))
+	@echo "Make Redmine API token ${API_TOKEN} available"
 
 $(ACCEPTANCE_TEST_DIR):
 	@echo "create acceptance-test directory"
@@ -99,11 +104,11 @@ install-sqlite-client:
 .PHONY fetch-api-token:
 fetch-api-token: ${TARGET_DIR}
 	@echo "Fetching API token"
-	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | jq -r .user.api_key | sed -re "s/(.*)/apikey = \"\1\"/" > ${REDMINE_API_TOKEN_FILE}
+	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | jq .user.api_key | sed -re "s/(.*)/apikey = \1/" > ${REDMINE_API_TOKEN_FILE}
 
 .PHONY start-redmine:
 start-redmine:
-	@make start-local-docker-compose wait-for-redmine load-redmine-defaults mark-admin-password-as-changed fetch-api-token
+	@make start-local-docker-compose wait-for-redmine load-redmine-defaults mark-admin-password-as-changed
 
 .PHONY clean-redmine:
 clean-redmine: clean
