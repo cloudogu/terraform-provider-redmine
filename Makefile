@@ -109,7 +109,7 @@ install-sqlite-client:
 .PHONY fetch-api-token:
 fetch-api-token: ${TARGET_DIR}
 	@echo "Fetching API token"
-	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | jq .user.api_key | sed -re "s/(.*)/apikey = \1/" > ${REDMINE_API_TOKEN_FILE}
+	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | sed -r 's/^.+api_key":"(.+)".+/apikey = "\1"/' > ${REDMINE_API_TOKEN_FILE}
 
 .PHONY start-redmine:
 start-redmine:

@@ -20,6 +20,15 @@ node('docker') {
                     "-v ${WORKSPACE}/docker-compose/settings.yml:/usr/src/redmine/config/settings.yml " +
                     "-v ${redmineFilesDir}:/usr/src/redmine/files") { redmineContainer ->
 
+                def redmineIP = findIp(redmineContainer)
+                stage('Prepare Redmine for acceptance tests') {
+                    withEnv(["REDMINE_URL=http://${redmineIP}:3000/",
+                             "REDMINE_CONTAINERNAME=${redmineContainer.id}"
+                    ]) {
+                        make("wait-for-redmine load-redmine-defaults mark-admin-password-as-changed")
+                    }
+                }
+
                 docker.image('golang:1.14.13').inside("--network ${buildnetwork} -e HOME=/tmp") {
                     stage('Build') {
                         make 'clean package checksum'
@@ -39,8 +48,6 @@ node('docker') {
                         withEnv(["REDMINE_URL=http://${redmineIP}:3000/",
                                  "REDMINE_CONTAINERNAME=${redmineContainer.id}"
                         ]) {
-                            def redmineIP=findIp(redmineContainer)
-                            make("wait-for-redmine load-redmine-defaults mark-admin-password-as-changed")
                             make("acceptance-test")
                             archiveArtifacts 'target/acceptance-tests/*.out'
                         }
