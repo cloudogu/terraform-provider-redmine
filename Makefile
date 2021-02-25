@@ -62,7 +62,7 @@ $(ACCEPTANCE_TEST_DIR):
 
 .PHONY: wait-for-redmine
 wait-for-redmine:
-	@echo "Waiting for Redmine to get up"
+	@echo "Waiting for Redmine to get up at ${REDMINE_URL}"
 	@for counter in `seq 0 5`; do \
 		if curl -f -s -H "Content-Type: application/json" ${REDMINE_URL}/projects.json > /dev/null; then \
 			echo "Redmine is up"; \
