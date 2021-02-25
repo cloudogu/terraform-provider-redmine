@@ -53,7 +53,7 @@ acceptance-test: $(BINARY) $(ACCEPTANCE_TEST_DIR)
 .PHONY: acceptance-test-local
 acceptance-test-local: $(ACCEPTANCE_TEST_DIR)
 	@# create non-permanent env var at make runtime, see https://stackoverflow.com/a/1909390/12529534
-	$(eval apiToken :=$(shell cat ${REDMINE_API_TOKEN_FILE}))
+	$(eval apiToken :=$(shell sed -re "s/apikey = \"(.*)\"/\1/" ${REDMINE_API_TOKEN_FILE}))
 	@REDMINE_API_KEY=${apiToken} ${TF_ADDITIONAL_ENVS} make acceptance-test
 
 $(ACCEPTANCE_TEST_DIR):
