@@ -32,7 +32,7 @@ node('docker') {
                 }
 
                 stage('Acceptance Tests') {
-                    sh "REDMINE_URL=http://${redmineContainerName}:8080/ make testacc"
+                    sh "REDMINE_URL=http://${redmineContainerName}:8080/ make acceptance-test"
                     archiveArtifacts 'target/acceptance-tests/*.out'
                 }
 

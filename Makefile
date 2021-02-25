@@ -12,6 +12,7 @@ include build/make/variables.mk
 DEFAULT_ADMIN_CREDENTIALS=admin:admin
 REDMINE_URL?=http://localhost:8080
 REDMINE_API_TOKEN_FILE=${TARGET_DIR}/redmineAPIToken.txt
+ACCEPTANCE_TEST_DIR=$(TARGET_DIR)/acceptance-test
 
 TEST?=$$(go list ./... | grep -v 'vendor')
 
@@ -47,15 +48,17 @@ clean-test-cache:
 	@echo clean go testcache
 	@go clean -testcache
 
-acceptance-test: $(BINARY)
+acceptance-test: $(BINARY) $(ACCEPTANCE_TEST_DIR)
 	@TF_ACC=1 go test $(PACKAGES) -coverprofile=$(TARGET_DIR)/acceptance-tests/coverage.out -timeout 120m
 
 .PHONY: acceptance-test-local
-acceptance-test-local:
+acceptance-test-local: $(ACCEPTANCE_TEST_DIR)
 	@# create non-permanent env var at make runtime, see https://stackoverflow.com/a/1909390/12529534
 	$(eval apiToken :=$(shell cat ${REDMINE_API_TOKEN_FILE}))
-	@mkdir -p $(TARGET_DIR)/acceptance-tests
 	@REDMINE_API_KEY=${apiToken} ${TF_ADDITIONAL_ENVS} make acceptance-test
+
+$(ACCEPTANCE_TEST_DIR):
+	@mkdir -p $(ACCEPTANCE_TEST_DIR)
 
 .PHONY: wait-for-redmine
 wait-for-redmine:
