@@ -11,6 +11,7 @@ include build/make/variables.mk
 
 DEFAULT_ADMIN_CREDENTIALS=admin:admin
 REDMINE_URL?=http://localhost:8080
+REDMINE_CONTAINERNAME?=terraform-provider-redmine_redmine_1
 REDMINE_API_TOKEN_FILE=${TARGET_DIR}/redmineAPIToken.txt
 ACCEPTANCE_TEST_DIR=$(TARGET_DIR)/acceptance-test
 
@@ -76,23 +77,23 @@ wait-for-redmine:
 .PHONY load-redmine-defaults:
 load-redmine-defaults:
 	@echo "Loading Redmine default configuration"
-	@docker-compose exec redmine bash -c "RAILS_ENV=production REDMINE_LANG=en bundle exec rake redmine:load_default_data"
+	@docker exec ${REDMINE_CONTAINERNAME} bash -c "RAILS_ENV=production REDMINE_LANG=en bundle exec rake redmine:load_default_data"
 
 .PHONY mark-admin-password-as-changed:
 mark-admin-password-as-changed: install-sqlite-client
 	@echo "Mark admin password as already changed"
-	@docker-compose exec redmine \
+	@docker exec ${REDMINE_CONTAINERNAME} \
 		sqlite3 /usr/src/redmine/sqlite/redmine.db \
 		"update users set must_change_passwd=0 where id=1;"
 	@echo "Restart Redmine to apply changed user data"
-	@docker-compose restart redmine
+	@docker restart ${REDMINE_CONTAINERNAME}
 	@make wait-for-redmine
 
 .PHONY install-sqlite-client:
 install-sqlite-client:
-	@if ! docker-compose exec redmine sh -c "apk list sqlite | grep installed" ; then \
+	@if ! docker exec ${REDMINE_CONTAINERNAME} sh -c "apk list sqlite | grep installed" ; then \
 		echo "Installing sqlite..." ; \
-		docker-compose exec redmine apk add sqlite ; \
+		docker exec ${REDMINE_CONTAINERNAME} apk add sqlite ; \
 	fi;
 
 .PHONY fetch-api-token:
