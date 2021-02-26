@@ -2,6 +2,11 @@
 
 A Terraform provider that imports a Redmine project/ticket data into a running Redmine instance
 
+
+### Developing this provider
+
+You can find more information about building and testing this provider in [docs/development_en.md](docs/development_en.md) (english). 
+
 ---
 ### What is the Cloudogu EcoSystem?
 
