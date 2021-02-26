@@ -52,7 +52,7 @@ clean-test-cache:
 acceptance-test: $(BINARY) $(ACCEPTANCE_TEST_DIR) api-token-to-var
 	@REDMINE_API_KEY=${API_TOKEN} TF_ACC=1 go test -v ./... -coverprofile=$(ACCEPTANCE_TEST_DIR)/coverage.out -timeout 120m 2>&1 | tee $(ACCEPTANCE_TEST_LOG)
 	@cat $(ACCEPTANCE_TEST_LOG) | go-junit-report > ${ACCEPTANCE_TEST_JUNIT}
-	@if grep '^FAIL' $(ACCEPTANCE_TEST_JUNIT); then \
+	@if grep '^FAIL' $(ACCEPTANCE_TEST_LOG); then \
 		exit 1; \
 	fi
 
