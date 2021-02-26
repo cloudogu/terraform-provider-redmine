@@ -187,7 +187,7 @@ func TestAccIssueUpdate_movesIssueToAnotherProject(t *testing.T) {
 					},
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyTrackerID, "2"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeySubject, "issue subject"),
-					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an dexample issue"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
