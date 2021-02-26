@@ -1,6 +1,7 @@
 #!groovy
-@Library(['github.com/cloudogu/zalenium-build-lib@v2.1.0']) _
+@Library(['github.com/cloudogu/zalenium-build-lib@v2.1.0', 'github.com/cloudogu/ces-build-lib@1.44.3']) _
 import com.cloudogu.ces.zaleniumbuildlib.*
+import com.cloudogu.ces.cesbuildlib.*
 
 node('docker') {
     timestamps {
@@ -65,7 +66,7 @@ node('docker') {
                     sh "${scannerHome}/bin/sonar-scanner"
                 } else if (branch == "develop") {
                     echo "This branch has been detected as the develop branch."
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.branch.target=master"
+                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.branch.target=main"
                 } else if (env.CHANGE_TARGET) {
                     echo "This branch has been detected as a pull request."
                     sh "${scannerHome}/bin/sonar-scanner -Dsonar.branch.name=${env.CHANGE_BRANCH}-PR${env.CHANGE_ID} -Dsonar.branch.target=${env.CHANGE_TARGET}"
