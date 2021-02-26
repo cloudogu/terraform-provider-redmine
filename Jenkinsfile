@@ -66,7 +66,7 @@ node('docker') {
                     sh "${scannerHome}/bin/sonar-scanner"
                 } else if (branch == "develop") {
                     echo "This branch has been detected as the develop branch."
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.branch.target=main"
+                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.branch.name=${env.BRANCH_NAME} -Dsonar.branch.target=master"
                 } else if (env.CHANGE_TARGET) {
                     echo "This branch has been detected as a pull request."
                     sh "${scannerHome}/bin/sonar-scanner -Dsonar.branch.name=${env.CHANGE_BRANCH}-PR${env.CHANGE_ID} -Dsonar.branch.target=${env.CHANGE_TARGET}"
