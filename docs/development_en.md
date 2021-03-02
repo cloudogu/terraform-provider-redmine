@@ -48,7 +48,7 @@ terraform apply
 
 ### Vision of Architecture 
 
-The usual CRUD operations for projects and issues are supported. Terraform's `import` operation is unsupported but not impossible to implement.
+The usual CRUD operations for projects and issues are supported. Terraform's `import` operation is unsupported yet easy to implement.
 
 **Projects:**
 
@@ -80,6 +80,8 @@ For Redmine issues these entity fields are currently supported:
 Building a Terraform provider has some unexpected quirks. For instance, `*schema.ResourceData.Id()/getId()` always points to a string ID which in turn leads to boilerplate code casting int IDs to string or leaving the ID out of an entity if unset.
 
 IDs in general are also a thing that are hard to test against in acceptance tests. This is because already existing data or entity insertion sequence may lead to different IDs than expected.
+
+To avoid having to manually adjust new authentication tokens with each new Redmine instance, the make target `make fetch-api-token` creates the file `examples/api_token.auto.tfvars`. This file will be read by Terraform during execution. All variables (including the variable `apikey`) must be declared to Terraform. This declaration is done in the file `examples/variables.tf`.
 
 ### Notable changes in the used Redmine configuration
 
