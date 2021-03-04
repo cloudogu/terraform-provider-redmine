@@ -64,7 +64,7 @@ Einmalig das Terraform-Arbeitsverzeichnis initialisieren:
 terraform init
 ```
 
-Danach kann durch Hinzufügen, Verändern oder Löschen von `resource`-Blöcken im Terraform-Skript mittels dieser Befehle auf Redmine angewendet werden:
+Danach kann durch Hinzufügen, Verändern oder Löschen von `resource`-Blöcken im Terraform-Skript die Konfiguration mittels dieser Befehle auf Redmine angewendet werden:
 
 ```
 terraform plan # zeigt an, was Terraform während "apply" durchführen würde
