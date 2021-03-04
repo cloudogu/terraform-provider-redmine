@@ -4,7 +4,7 @@
 
 ### Tools
 
-Das Bauen erfordert diese installierten Werkzeuge. Im Allgemeinen verlässt sich dieses Projekt nicht auf topaktuelle oder experimentelle Versionen. Halbwegs aktuelle Versionen sind in Ordnung, aber wenn das Bauen fehlschlägt, sollten überprüft werden, ob stark veraltete Versionen der jeweiligen Tools vorliegen:
+Das Bauen erfordert diese installierten Werkzeuge. Im Allgemeinen verlässt sich dieses Projekt nicht auf topaktuelle oder experimentelle Versionen. Halbwegs aktuelle Versionen sind in Ordnung, aber wenn das Bauen fehlschlägt, sollte überprüft werden, ob stark veraltete Versionen der jeweiligen Tools vorliegen:
 
 - Terraform client
    - f. e. v0.14.3 (linux/amd64)
