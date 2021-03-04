@@ -23,6 +23,8 @@ Aktuell ist es nur möglich, den Redmine-Provider per API-Token (`api_key`) gege
 
 ### Terraform-Skript
 
+Das folgende Beispielskript kann auch aus dem Verzeichnis `examples/` bezogen werden.
+
 ```terraform
 terraform {
   required_providers {
@@ -68,3 +70,13 @@ Danach kann durch Hinzufügen, Verändern oder Löschen von `resource`-Blöcken 
 terraform plan # zeigt an, was Terraform während "apply" durchführen würde
 terraform apply # führt die Aktion des Terraform-Skripts gegenüber Redmine durch
 ```
+
+# Verhalten von ausgewählten Redmine-Entitäten
+
+## Projekte
+
+Projekte enthalten die Felder "ID" sowie "Identifier" und können in Redmine genau null oder einmal vorkommen. Die ID ist lediglich ein technischer Bezeichner und wird beim Anlegen eines Projekts berechnet. Abgesehen davon, dass ein Projekt von anderen Entitäten referenziert wird (z. B. die Issue-Ressource im obigen Beispiel), ist die ID nicht Teil der Definition eines Projekts innerhalb eines Terraform-Skripts .
+
+Im Gegensatz dazu ist der Projekt-Identifier ein menschenlesbarer String, der nicht automatisch berechnet werden kann. Stattdessen muss der Projektbezeichner vom Benutzer gewählt werden. Da der Projektbezeichner während der Lebensdauer eines Projekts nicht geändert werden kann, wird beim Ändern des Bezeichners eines bestehenden Projekts ein komplett neues Projekt mit dem gegebenen, aber anderen Bezeichner erstellt.
+
+Im Gegensatz dazu ist die Projektkennung eine menschenlesbare Zeichenfolge, die nicht automatisch berechnet werden kann. Stattdessen muss der Projektbezeichner vom Benutzer gewählt werden. Da der Projektbezeichner während der Lebensdauer eines Projekts nicht geändert werden kann, wird das Ändern des Bezeichners eines bestehenden Projekts als Fehler angesehen (technisch gesehen würde Redmine diese Änderung stillschweigend ignorieren, was einen falschen Terraform-Status hinterlassen würde). Zusammenfassend lässt sich sagen, **dass es unmöglich ist, die Kennung eines bestehenden Projekts zu ändern.**

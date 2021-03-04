@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"github.com/cloudogu/terraform-provider-redmine/redmine"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,7 +51,6 @@ func resourceProject() *schema.Resource {
 			PrjIdentifier: {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 			PrjDescription: {
 				Type:     schema.TypeString,
@@ -126,6 +126,19 @@ func resourceProjectUpdate(ctx context.Context, d *schema.ResourceData, i interf
 	client := i.(ProjectClient)
 
 	project := projectFromState(d)
+
+	if d.HasChange(PrjIdentifier) {
+		oldIdentifierRaw, newIdentifierRaw := d.GetChange(PrjIdentifier)
+		oldIdentifier := (oldIdentifierRaw).(string)
+		newIdentifier := (newIdentifierRaw).(string)
+		warnMsg := fmt.Sprintf("The value of project key '%s' ('%s' => '%s') can only be set during project creation and must not be changed afterwards.",
+			PrjIdentifier, oldIdentifier, newIdentifier)
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("Detected change in project read-only key '%s'", PrjIdentifier),
+			Detail:   warnMsg,
+		})
+	}
 
 	_, err := client.UpdateProject(ctx, project)
 	if err != nil {

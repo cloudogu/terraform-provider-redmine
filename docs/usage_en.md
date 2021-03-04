@@ -21,9 +21,11 @@ cp terraform-provider-redmine_1.0_linux_amd64 ~/.terraform.d/plugins/cloudogu.co
 A mere Redmine container is not sufficient, since usually no configuration has been loaded and API calls have been
 disabled.
 
-Currently it is only possible to authenticate the Redmine provider against Redmine via API token (`api_key`).
+Currently, it is only possible to authenticate the Redmine provider against Redmine via API token (`api_key`).
 
 ### Terraform script
+
+The following example script can also be obtained from the `examples/` directory. 
 
 ```terraform
 terraform {
@@ -72,3 +74,11 @@ these commands:
 terraform plan # shows what Terraform would do during "apply"
 terraform apply # performs the action of the terraform script against redmine
 ```
+
+# Behaviour of selected Redmine entities
+
+## Projects
+
+Projects contain the fields "ID" as well as "Identifier" and can exactly zero or one time in Redmine. The ID is merely a technical identifier and will be computed upon Project creation. Referencing a project from other entities aside (f. i. the issue resource in the example above), the ID is not part of defining a project within a Terraform script . 
+
+In contrast to that, the project identifier is a human-readable string that cannot be computed automatically. Instead, the project identifier must be chosen by the user. Because the project identifier cannot be changed during a project's lifetime, changing the identifier of an existing project will be considered an error (technically Redmine silently would ignore this change which would leave a bogus Terraform state). Quintessentially, **it is impossible to change an existing project's identifier.**

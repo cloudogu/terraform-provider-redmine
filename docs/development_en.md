@@ -30,7 +30,7 @@ make target | action
 
 ### Manual Testing
 
-Look at `example/main.tf` and modify the `redmine_*` resources to your liking. 
+Look at `examples/main.tf` and modify the `redmine_*` resources to your liking. 
 
 ```bash
 make install-local
