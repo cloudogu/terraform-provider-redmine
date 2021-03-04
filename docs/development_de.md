@@ -63,7 +63,7 @@ Für Redmine-Projekte werden derzeit diese Objektfelder unterstützt:
 
 **Issues:**
 
-Für Redmine-Projekte werden derzeit diese Objektfelder unterstützt::
+Für Redmine-Issues werden derzeit diese Objektfelder unterstützt:
 
 - `project_id` -> referenziert ein Projekt über eine Terraform-Ressourcenreferenz
       - z. B. `redmine_project.yourtfproject.id`
