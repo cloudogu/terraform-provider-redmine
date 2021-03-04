@@ -30,7 +30,7 @@ make-Target | Aktion
 
 ### Manuelles Testen
 
-Schauen Sie sich `examples/main.tf` und ändern Sie die `redmine_*` Ressourcen nach Ihren Wünschen. 
+Die Beispieldatei `examples/main.tf` kann direkt genutzt werden. Die `redmine_*` Ressourcen können individuell angepasst werden. 
 
 ```bash
 make install-local
