@@ -1,0 +1,15 @@
+version: '2.0'
+services:
+  redmine:
+    image: redmine:4.1.1-alpine
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    environment:
+      REDMINE_SECRET_KEY_BASE: supersecretkey
+    volumes:
+    - redmine_data:/usr/src/redmine/files
+    - ./docker-compose/settings.yml:/usr/src/redmine/config/settings.yml
+volumes:
+  redmine_data:
+    driver: local

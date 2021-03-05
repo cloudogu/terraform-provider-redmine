@@ -11,6 +11,53 @@ node('docker') {
             checkout scm
         }
 
+        def redmineFilesDir="${WORKSPACE}/redmine-files"
+        sh "mkdir -p ${redmineFilesDir}"
+        def redmineImage = docker.image('redmine:4.1.1-alpine')
+
+        withDockerNetwork { buildnetwork ->
+            redmineImage.withRun("--network ${buildnetwork} " +
+                    "-e REDMINE_SECRET_KEY_BASE=supersecretkey " +
+                    "-v ${WORKSPACE}/docker-compose/settings.yml:/usr/src/redmine/config/settings.yml " +
+                    "-v ${redmineFilesDir}:/usr/src/redmine/files") { redmineContainer ->
+
+                def redmineIP = findIp(redmineContainer)
+                stage('Prepare Redmine for acceptance tests') {
+                    withEnv(["REDMINE_URL=http://${redmineIP}:3000/",
+                             "REDMINE_CONTAINERNAME=${redmineContainer.id}"
+                    ]) {
+                        make("wait-for-redmine load-redmine-defaults mark-admin-password-as-changed")
+                    }
+                }
+
+                docker.image('golang:1.14.13').inside("--network ${buildnetwork} -e HOME=/tmp") {
+                    stage('Build') {
+                        make 'clean package checksum'
+                        archiveArtifacts 'target/*'
+                    }
+
+                    stage('Unit Test') {
+                        make 'unit-test'
+                        junit allowEmptyResults: true, testResults: 'target/unit-tests/*-tests.xml'
+                    }
+
+                    stage('Static Analysis') {
+                        make 'static-analysis'
+                    }
+
+                    stage('Acceptance Tests') {
+                        withEnv(["REDMINE_URL=http://${redmineIP}:3000/",
+                                 "REDMINE_CONTAINERNAME=${redmineContainer.id}"
+                        ]) {
+                            make("acceptance-test")
+                            archiveArtifacts 'target/acceptance-tests/*.out'
+                            junit allowEmptyResults: true, testResults: 'target/acceptance-tests/*.xml'
+                        }
+                    }
+
+                }
+            }
+        }
         stage('SonarQube') {
             def scannerHome = tool name: 'sonar-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
             withSonarQubeEnv {
@@ -36,4 +83,13 @@ node('docker') {
             }
         }
     }
+}
+
+void make(String goal) {
+    sh "make ${goal}"
+}
+
+String findIp(container) {
+    def containerIP = sh (returnStdout: true, script: "docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${container.id}")
+    return containerIP.trim()
 }
