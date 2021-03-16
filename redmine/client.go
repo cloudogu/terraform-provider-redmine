@@ -19,12 +19,15 @@ type Config struct {
 	APIKey         string
 }
 
-func NewClient(config Config) *Client {
-	redmineAPI := rmapi.NewClient(config.URL, config.APIKey)
+func NewClient(config Config) (*Client, error) {
+	redmineAPI, err := rmapi.NewClientBuilder().Endpoint(config.URL).AuthBasicAuth(config.Username, config.Password).SkipSSLVerify(config.SkipCertVerify).Build()
+	if err != nil {
+		return nil, err
+	}
 	redmineAPI.Limit = -1
 	redmineAPI.Offset = -1
 
-	return &Client{config: config, redmineAPI: redmineAPI}
+	return &Client{config: config, redmineAPI: redmineAPI}, nil
 }
 
 func verifyIDtoInt(id string) (int, error) {

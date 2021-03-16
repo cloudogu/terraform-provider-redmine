@@ -62,13 +62,17 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		url = uVal.(string)
 	}
 
-	client := redmine.NewClient(redmine.Config{
+	client, err := redmine.NewClient(redmine.Config{
 		URL:            url,
 		Username:       username,
 		Password:       password,
 		SkipCertVerify: skipVerify,
 		APIKey:         apiKey,
 	})
+
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
 
 	return client, nil
 }
