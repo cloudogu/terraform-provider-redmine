@@ -29,7 +29,7 @@ func (c *Client) CreateIssue(ctx context.Context, issue *Issue) (*Issue, error) 
 
 	createdAPIIssue, err := c.redmineAPI.CreateIssue(*apiIssue)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error while creating issue (id: %s, subject: %s)", issue.ID, issue.Subject)
+		return nil, errors.Wrapf(err, "error while creating issue (project id: %d, subject: %s)", issue.ProjectID, issue.Subject)
 	}
 
 	actualIssue := unwrapIssue(createdAPIIssue)

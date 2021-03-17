@@ -25,7 +25,7 @@ func (c *Client) CreateProject(ctx context.Context, project *Project) (*Project,
 
 	actualAPIProject, err := c.redmineAPI.CreateProject(*apiProj)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error while creating project (id: %s, identifier: %s)", project.ID, project.Identifier)
+		return nil, errors.Wrapf(err, "error while creating project (identifier: %s)", project.Identifier)
 	}
 
 	actualProject := unwrapProject(actualAPIProject)
