@@ -39,7 +39,8 @@ terraform {
 provider "redmine" {
   url = "http://localhost:3000"
   skip_cert_verify = true
-  api_key = yourAPIToken
+  username = "admin"
+  password = "admin"
 }
 
 resource "redmine_project" "project1" {
@@ -82,3 +83,7 @@ terraform apply # performs the action of the terraform script against redmine
 Projects contain the fields "ID" as well as "Identifier" and can exactly zero or one time in Redmine. The ID is merely a technical identifier and will be computed upon Project creation. Referencing a project from other entities aside (f. i. the issue resource in the example above), the ID is not part of defining a project within a Terraform script . 
 
 In contrast to that, the project identifier is a human-readable string that cannot be computed automatically. Instead, the project identifier must be chosen by the user. Because the project identifier cannot be changed during a project's lifetime, changing the identifier of an existing project will be considered an error (technically Redmine silently would ignore this change which would leave a bogus Terraform state). Quintessentially, **it is impossible to change an existing project's identifier.**
+
+# Redmine's API configuration
+
+In order for this provider to work, Redmine must have at least Rest API access enabled. If this provider tries to connect against a Redmine instance on a different machine (that includes Virtual Machines) then Redmine must additionally have JSONP support enabled.
