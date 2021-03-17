@@ -20,12 +20,14 @@ type Config struct {
 }
 
 func NewClient(config Config) (*Client, error) {
-	redmineAPI, err := rmapi.NewClientBuilder().Endpoint(config.URL).AuthBasicAuth(config.Username, config.Password).SkipSSLVerify(config.SkipCertVerify).Build()
+	redmineAPI, err := rmapi.NewClientBuilder().
+		Endpoint(config.URL).
+		AuthBasicAuth(config.Username, config.Password).
+		SkipSSLVerify(config.SkipCertVerify).
+		Build()
 	if err != nil {
 		return nil, err
 	}
-	redmineAPI.Limit = -1
-	redmineAPI.Offset = -1
 
 	return &Client{config: config, redmineAPI: redmineAPI}, nil
 }
