@@ -39,8 +39,9 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"redmine_project": resourceProject(),
-			"redmine_issue":   resourceIssue(),
+			"redmine_project":        resourceProject(),
+			"redmine_issue":          resourceIssue(),
+			"redmine_issue_category": resourceIssueCategory(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"redmine_issue_statuses": dataSourceIssueStatuses(),
