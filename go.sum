@@ -77,6 +77,8 @@ github.com/cloudogu/go-redmine v0.1.1-0.20210318103504-b84670ac3ccb h1:g4lc1cY3c
 github.com/cloudogu/go-redmine v0.1.1-0.20210318103504-b84670ac3ccb/go.mod h1:ZdsBnp2Moael5DzKAv5njt2s6ejQtLHBPUswClaG4g8=
 github.com/cloudogu/go-redmine v0.1.1-0.20210318124053-a3a33ba2b593 h1:y+mdFlpj04obcRG61N2R7MTDsy3c7wVmkZwVNarD7w8=
 github.com/cloudogu/go-redmine v0.1.1-0.20210318124053-a3a33ba2b593/go.mod h1:ZdsBnp2Moael5DzKAv5njt2s6ejQtLHBPUswClaG4g8=
+github.com/cloudogu/go-redmine v0.1.1-0.20210318151950-73aff5671f8c h1:1nHQEeGo9BTOi4PcBvWsK64k3fcFamKfDJL20uU+dDI=
+github.com/cloudogu/go-redmine v0.1.1-0.20210318151950-73aff5671f8c/go.mod h1:ZdsBnp2Moael5DzKAv5njt2s6ejQtLHBPUswClaG4g8=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
