@@ -71,7 +71,7 @@ func TestAccProjectCreate_multipleProjects(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: basicProjectWithDescription(prjValueIdentifier, prjValueName, "This is an example project") + "\n" +
-					genericProjectAsJSON(project2Name, "anotherident", "Another project", "Yet another project",
+					genericProjectAsHCL(project2Name, "anotherident", "Another project", "Yet another project",
 						"https://www.example.com/", true, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// do not test id's here because creation sequence is not guaranteed
@@ -125,7 +125,7 @@ func TestAccProjectUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: genericProjectAsJSON(testProjectTFResourceName, prjValueIdentifier, "nameChange", "descriptionChange",
+				Config: genericProjectAsHCL(testProjectTFResourceName, prjValueIdentifier, "nameChange", "descriptionChange",
 					"homepageChange", true, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(testProjectTFResource, prjKeyID, "1"),
@@ -157,7 +157,7 @@ func TestAccProjectUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: genericProjectAsJSON(testProjectTFResourceName, prjValueIdentifier, "nameChange2", "descriptionChange2",
+				Config: genericProjectAsHCL(testProjectTFResourceName, prjValueIdentifier, "nameChange2", "descriptionChange2",
 					"homepageChange2", false, true),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(testProjectTFResource, prjKeyID, "1"),
@@ -222,10 +222,10 @@ func basicProjectWithDescription(identifier, name, description string) string {
 	const isPublic = false
 	const inheritMembers = true
 
-	return genericProjectAsJSON(testProjectTFResourceName, identifier, name, description, prjValueHomepage, isPublic, inheritMembers)
+	return genericProjectAsHCL(testProjectTFResourceName, identifier, name, description, prjValueHomepage, isPublic, inheritMembers)
 }
 
-func genericProjectAsJSON(tfName, identifier, name, description, homepage string, isPublic, inheritMembers bool) string {
+func genericProjectAsHCL(tfName, identifier, name, description, homepage string, isPublic, inheritMembers bool) string {
 	return fmt.Sprintf(`resource "%s" "%s" {
   identifier = "%s"
   name = "%s"

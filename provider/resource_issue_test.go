@@ -32,7 +32,7 @@ const (
 func TestAccIssueCreate_basic(t *testing.T) {
 	projectResourceIDReference := testProjectTFResource + ".id"
 	tfProjectAndIssueBlocks := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2)
+		issueAsHCL(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -61,8 +61,8 @@ func TestAccIssueCreate_multipleIssuesToTheSameProject(t *testing.T) {
 	projectResourceIDReference := testProjectTFResource + ".id"
 
 	tfProjectAndIssueBlocks := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2) + "\n" +
-		issueAsJSON("another_issue", projectResourceIDReference, 1, "issue subject2", "This is an example issue2", 5)
+		issueAsHCL(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2) + "\n" +
+		issueAsHCL("another_issue", projectResourceIDReference, 1, "issue subject2", "This is an example issue2", 5)
 	testIssueTFRessourceName2 := testIssueTFResourceType + "." + "another_issue"
 
 	resource.Test(t, resource.TestCase{
@@ -101,9 +101,9 @@ func TestAccIssueCreate_multipleIssuesToTheSameProject(t *testing.T) {
 func TestAccIssueUpdate_issueValuesChanged(t *testing.T) {
 	projectResourceIDReference := testProjectTFResource + ".id"
 	tfProjectAndIssueBlocksCreation := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2)
+		issueAsHCL(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2)
 	tfProjectAndIssueBlocksChanged := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 1, "subjectChanged", "descriptionChanged", 5)
+		issueAsHCL(testIssueTFResourceName, projectResourceIDReference, 1, "subjectChanged", "descriptionChanged", 5)
 
 	createdOn := "updated during 1. step"
 	updatedOn := "updated during 1. and 2. step"
@@ -166,12 +166,12 @@ func TestAccIssueUpdate_movesIssueToAnotherProject(t *testing.T) {
 	projectResourceID2Reference := testProjectTFResourceType + ".project2.id"
 
 	tfProjectAndIssueBlocksCreated := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-		genericProjectAsJSON("project2", "anotherproject", "target project for moved issues", "desc", "", false, false) + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceID1Reference, 2, "issue subject", "This is an example issue", 2)
+		genericProjectAsHCL("project2", "anotherproject", "target project for moved issues", "desc", "", false, false) + "\n" +
+		issueAsHCL(testIssueTFResourceName, projectResourceID1Reference, 2, "issue subject", "This is an example issue", 2)
 
 	tfProjectAndIssueBlocksMovedIssue := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-		genericProjectAsJSON("project2", "anotherproject", "target project for moved issues", "desc", "", false, false) + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceID2Reference, 2, "issue subject", "This is an example issue", 2)
+		genericProjectAsHCL("project2", "anotherproject", "target project for moved issues", "desc", "", false, false) + "\n" +
+		issueAsHCL(testIssueTFResourceName, projectResourceID2Reference, 2, "issue subject", "This is an example issue", 2)
 
 	projectIDFirstRun := "updated in 1. step"
 
@@ -253,7 +253,7 @@ func testAccCheckIssueDestroy(s *terraform.State) error {
 	return testAccCheckProjectDestroy(s)
 }
 
-func issueAsJSON(tfName, projectID string, trackerID int, subject, description string, prioID int) string {
+func issueAsHCL(tfName, projectID string, trackerID int, subject, description string, prioID int) string {
 	return fmt.Sprintf(`resource "%s" "%s" {
   project_id = %s
   tracker_id = %d
