@@ -15,6 +15,7 @@ const (
 	IssSubject       = "subject"
 	IssDescription   = "description"
 	IssParentIssueID = "parent_issue_id"
+	IssPriorityID    = "priority_id"
 	IssCreatedOn     = "created_on"
 	IssUpdatedOn     = "updated_on"
 )
@@ -60,6 +61,10 @@ func resourceIssue() *schema.Resource {
 				Default:  "",
 			},
 			IssParentIssueID: {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			IssPriorityID: {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
@@ -164,6 +169,9 @@ func issueSetToState(issue *redmine.Issue, d *schema.ResourceData) diag.Diagnost
 	if err := d.Set(IssDescription, issue.Description); err != nil {
 		return diag.FromErr(err)
 	}
+	if err := d.Set(IssPriorityID, issue.PriorityID); err != nil {
+		return diag.FromErr(err)
+	}
 	if err := d.Set(IssCreatedOn, issue.CreatedOn); err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,6 +193,11 @@ func issueFromState(d *schema.ResourceData) *redmine.Issue {
 	issueID := d.Id()
 	if issueID != "" && issueID != "0" {
 		issue.ID = issueID
+	}
+
+	issuePriorityID := d.Get(IssPriorityID).(int)
+	if issuePriorityID != 0 {
+		issue.PriorityID = issuePriorityID
 	}
 
 	return issue

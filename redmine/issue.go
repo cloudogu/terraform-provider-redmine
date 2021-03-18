@@ -15,6 +15,7 @@ type Issue struct {
 	Subject       string `json:"subject"`
 	Description   string `json:"description"`
 	ParentIssueID int    `json:"parent_issue_id"`
+	PriorityID    int    `json:"priority_id"`
 	CreatedOn     string `json:"created_on"`
 	UpdatedOn     string `json:"updated_on"`
 }
@@ -101,9 +102,21 @@ func wrapIssue(issue *Issue) *rmapi.Issue {
 	if issue.ID != "" {
 		apiIssue.Id, _ = strconv.Atoi(issue.ID)
 	}
+
 	if issue.ParentIssueID != 0 {
+		if apiIssue.Parent == nil {
+			apiIssue.Parent = &rmapi.Id{}
+		}
 		apiIssue.Parent.Id = issue.ParentIssueID
 		apiIssue.ParentId = issue.ParentIssueID
+	}
+
+	if issue.PriorityID != 0 {
+		if apiIssue.Priority == nil {
+			apiIssue.Priority = &rmapi.IdName{}
+		}
+		apiIssue.Priority.Id = issue.PriorityID
+		apiIssue.PriorityId = issue.PriorityID
 	}
 
 	return apiIssue
@@ -129,6 +142,10 @@ func unwrapIssue(apiIssue *rmapi.Issue) *Issue {
 
 	if apiIssue.Tracker != nil {
 		issue.TrackerID = apiIssue.Tracker.Id
+	}
+
+	if apiIssue.Priority != nil {
+		issue.PriorityID = apiIssue.Priority.Id
 	}
 
 	return issue
