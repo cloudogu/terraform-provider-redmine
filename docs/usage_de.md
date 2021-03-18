@@ -19,7 +19,7 @@ cp  terraform-provider-redmine_1.0_linux_amd64 ~/.terraform.d/plugins/cloudogu.c
 
 Ein bloßer Redmine-Container reicht nicht, da i. d. R. keine Konfiguration geladen wurde und zudem API-Calls deaktiviert wurden.
 
-Aktuell ist es nur möglich, den Redmine-Provider per API-Token (`api_key`) gegenüber Redmine zu authentifizieren. 
+Dieser Redmine-Anbieter authentifiziert sich gegen Redmine über die _Basic Authentication_ mit Benutzer/Passwort-Paar. Diese Werte können im "redmine" -Provider-Block konfiguriert werden (siehe Beispielskript). Damit dieser Provider funktioniert, muss in Redmine die `Rest-API` eingeschaltet sein. Sollte dieser Provider auf einer anderen Maschine laufen als die Redmine-Instanz, so muss in Redmine zusätzlich `JSONP-Support` eingeschaltet sein.
 
 ### Terraform-Skript
 
@@ -72,13 +72,57 @@ terraform plan # zeigt an, was Terraform während "apply" durchführen würde
 terraform apply # führt die Aktion des Terraform-Skripts gegenüber Redmine durch
 ```
 
-# Verhalten von ausgewählten Redmine-Entitäten
+# Verhalten ausgewählter Redmine-Entitäten
 
-## Projekte
+## Projects / Projekte
 
 Projekte enthalten die Felder "ID" sowie "Identifier" und können in Redmine genau null oder einmal vorkommen. Die ID ist lediglich ein technischer Bezeichner und wird beim Anlegen eines Projekts berechnet. Abgesehen davon, dass ein Projekt von anderen Entitäten referenziert wird (z. B. die Issue-Ressource im obigen Beispiel), ist die ID nicht Teil der Definition eines Projekts innerhalb eines Terraform-Skripts .
 
 Im Gegensatz dazu ist die Projektkennung eine menschenlesbare Zeichenfolge, die nicht automatisch berechnet werden kann. Stattdessen muss der Projektbezeichner vom Benutzer gewählt werden. Da der Projektbezeichner während der Lebensdauer eines Projekts nicht geändert werden kann, wird das Ändern des Bezeichners eines bestehenden Projekts als Fehler angesehen (technisch gesehen würde Redmine diese Änderung stillschweigend ignorieren, was einen falschen Terraform-Status hinterlassen würde). Zusammenfassend lässt sich sagen, **dass es unmöglich ist, die Kennung eines bestehenden Projekts zu ändern.**
+
+Übersetzungstypen
+Textübersetzung
+Ausgangstext
+auto_awesome
+Ausgangssprache: Englisch
+1343 / 5000
+Übersetzungsergebnisse
+## Probleme
+
+### Mehrzeilige Beschreibungen
+Die Problembeschreibung ist ein mehrzeiliges Textfeld. Daher kann eine Redmine-Problemressource nicht nur einzeilige, sondern auch mehrzeilige Beschreibungen bereitstellen. Es gibt zwei verschiedene Möglichkeiten, dies zu erreichen:
+
+Die erste Variante funktioniert mit inline eingefügten Zeilenumbrüchen wie folgt:
+
+```terraform
+resource "redmine_issue" "issue" {
+  //...
+  description = "An **important task** _should_ *be done*!\n\n```bash\ncodeblock() {\n  echo -n $PATH}\n```"
+}
+```
+
+Die zweite Variante funktioniert mit sogenannten (Heredocs) [https://www.terraform.io/docs/language/expressions/strings.html], die zwischen doppelten spitzen Klammern "<<" und zwei Bezeichnern eingekapselt sind. Der Vorteil der Lesbarkeit in Heredocs liegt auf der Hand.
+
+    resource "redmine_issue" "issue" {
+      //...
+      description = <<EOT
+    An **important task** _should_ *be done*!
+    
+    ```bash
+    codeblock() {
+      echo -n $PATH
+    }
+    ```
+    EOT
+    }
+
+### Beschreibung wird immer als geändert markiert
+
+Redmine scheint Unix-Zeilenumbrüche `\n` in Windows-Zeilenumbrüche `\r\n` umzukodieren, wenn die Beschreibung zurückgegeben wird. Bei jedem `terraform plan` markiert Terraform die Beschreibung als geändert, auch wenn kein sichtbarer Unterschied besteht.
+
+## Issue Categories / Ticketkategorien
+
+Redmines Ticketkategorien enthalten ursprünglich ein optionales Feld "assigned_to", das auf einen Benutzer verweist. Dieses Feld wird derzeit nicht von diesem Provider unterstützt.
 
 # API-Konfiguration von Redmine
 

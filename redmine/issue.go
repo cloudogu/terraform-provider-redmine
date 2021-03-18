@@ -16,6 +16,7 @@ type Issue struct {
 	Description   string `json:"description"`
 	ParentIssueID int    `json:"parent_issue_id"`
 	PriorityID    int    `json:"priority_id"`
+	CategoryID    int    `json:"category_id"`
 	CreatedOn     string `json:"created_on"`
 	UpdatedOn     string `json:"updated_on"`
 }
@@ -119,6 +120,14 @@ func wrapIssue(issue *Issue) *rmapi.Issue {
 		apiIssue.PriorityId = issue.PriorityID
 	}
 
+	if issue.CategoryID != 0 {
+		if apiIssue.Category == nil {
+			apiIssue.Category = &rmapi.IdName{}
+		}
+		apiIssue.Category.Id = issue.CategoryID
+		apiIssue.CategoryId = issue.CategoryID
+	}
+
 	return apiIssue
 }
 
@@ -146,6 +155,10 @@ func unwrapIssue(apiIssue *rmapi.Issue) *Issue {
 
 	if apiIssue.Priority != nil {
 		issue.PriorityID = apiIssue.Priority.Id
+	}
+
+	if apiIssue.Category != nil {
+		issue.CategoryID = apiIssue.Category.Id
 	}
 
 	return issue
