@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Add
 - set Basic Authentication as default authentication instead of API token (#3)
-- add field "issue priority" to issue resource (#3) 
+- add support for [issue priority](docs/usage_en.md) to issue resource (#3)
+- add support for [issue category](docs/usage_en.md) to issue resource (#3) 
 
 ## [v0.1.0] - 2021-03-05
 ### Added
