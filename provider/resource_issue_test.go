@@ -25,6 +25,7 @@ const (
 	issKeyDescription   = "description"
 	issKeyParentIssueID = "parent_issue_id"
 	issKeyPriorityID    = "priority_id"
+	issKeyCategoryID    = "category_id"
 	issKeyCreatedOn     = "created_on"
 	issKeyUpdatedOn     = "updated_on"
 )
@@ -49,6 +50,7 @@ func TestAccIssueCreate_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyPriorityID, "2"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyCategoryID, "0"),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
 				),
@@ -80,6 +82,7 @@ func TestAccIssueCreate_multipleIssuesToTheSameProject(t *testing.T) {
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyPriorityID, "2"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyCategoryID, "0"),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
 					// check 2nd issue
@@ -90,6 +93,7 @@ func TestAccIssueCreate_multipleIssuesToTheSameProject(t *testing.T) {
 					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyDescription, "This is an example issue2"),
 					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyParentIssueID, "0"),
 					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyPriorityID, "5"),
+					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyCategoryID, "0"),
 					resource.TestCheckResourceAttrSet(testIssueTFRessourceName2, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFRessourceName2, issKeyUpdatedOn),
 				),
@@ -138,6 +142,7 @@ func TestAccIssueUpdate_issueValuesChanged(t *testing.T) {
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "descriptionChanged"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyPriorityID, "5"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyCategoryID, "0"),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
 					func(state *terraform.State) error {
@@ -194,6 +199,7 @@ func TestAccIssueUpdate_movesIssueToAnotherProject(t *testing.T) {
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeySubject, "issue subject"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyCategoryID, "0"),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
 				),
@@ -215,6 +221,83 @@ func TestAccIssueUpdate_movesIssueToAnotherProject(t *testing.T) {
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeySubject, "issue subject"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyCategoryID, "0"),
+					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
+					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIssueCreate_addAndRemoveIssueCategory(t *testing.T) {
+	projectResourceIDReference := testProjectTFResource + ".id"
+
+	tfProjectIssueBlocksWithoutIssueCategory := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
+		issueAsHCL(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2)
+
+	issueWithCategory := fmt.Sprintf(`resource "%s" "%s" {
+  project_id = %s
+  tracker_id = %d
+  subject = "%s"
+  description = "%s"
+  priority_id = "%d"
+  category_id = %s.id
+}`, testIssueTFResourceType, testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2, testIssueCategoryTFResource)
+
+	tfProjectIssueBlocksWithIssueCategory := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
+		issueWithCategory + "\n" +
+		issueCategoryAsHCL(testIssueCategoryTFResourceName, projectResourceIDReference, "Bananas and other tropical fruits")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviders,
+		CheckDestroy:      testAccCheckIssueDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tfProjectIssueBlocksWithoutIssueCategory,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// do not test id's here because creation sequence is not guaranteed
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyProjectID, "1"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyTrackerID, "2"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeySubject, "issue subject"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyPriorityID, "2"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyCategoryID, "0"),
+					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
+					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
+				),
+			},
+			{
+				// add issue category
+				Config: tfProjectIssueBlocksWithIssueCategory,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(testIssueCategoryTFResource, issCatKeyName, "Bananas and other tropical fruits"),
+					// do not test id's here because creation sequence is not guaranteed
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyProjectID, "1"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyTrackerID, "2"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeySubject, "issue subject"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyPriorityID, "2"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyCategoryID, "1"),
+					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
+					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
+				),
+			},
+			{
+				// remove issue category again
+				Config: tfProjectIssueBlocksWithoutIssueCategory,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// do not test id's here because creation sequence is not guaranteed
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyProjectID, "1"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyTrackerID, "2"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeySubject, "issue subject"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyCategoryID, "0"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyPriorityID, "2"),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
 				),
