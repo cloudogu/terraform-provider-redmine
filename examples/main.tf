@@ -64,3 +64,13 @@ resource "redmine_issue" "issue1" {
   description = "In this ticket an **important task** should be done!\n\nGo ahead!\n\n```bash\necho -n $PATH\n```"
   priority_id = local.redmine_default_issue_priorities_ids.immediate
 }
+
+resource "redmine_issue_category" "issue_category_dev" {
+  project_id = redmine_project.project1.id
+  name = "Product Development"
+}
+
+resource "redmine_issue_category" "issue_category_sm" {
+  project_id = redmine_project.project1.id
+  name = "Service & Maintenance"
+}
