@@ -42,6 +42,7 @@ func Provider() *schema.Provider {
 			"redmine_project":        resourceProject(),
 			"redmine_issue":          resourceIssue(),
 			"redmine_issue_category": resourceIssueCategory(),
+			"redmine_version":        resourceVersion(),
 		},
 		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,

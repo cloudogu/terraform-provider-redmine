@@ -50,8 +50,8 @@ locals {
 
 resource "redmine_project" "project1" {
   identifier = "exampleproject"
-  name = "example project"
-  description = "this is an example project."
+  name = "Example Project"
+  description = "This is an example project for the Super-App development team."
   homepage = "https://cloudogu.com/"
   is_public = false
   inherit_members = true
@@ -79,4 +79,14 @@ EOT
 resource "redmine_issue_category" "issue_category_dev" {
   project_id = redmine_project.project1.id
   name = "Product Development"
+}
+
+resource "redmine_version" "issue_category_dev" {
+  project_id = redmine_project.project1.id
+  name = "Sprint 2021-06"
+  description = "Super-App Scrum Sprint 6 (team codename: Eagle in the jar)"
+  // valid values: open (default when omitted at creation), locked, closed
+  status = "locked"
+  // can be empty or must match date format YYYY-MM-DD
+  due_date = "2021-04-01"
 }

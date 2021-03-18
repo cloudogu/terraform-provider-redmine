@@ -73,7 +73,7 @@ func TestAccIssueCategoryCreate_multipleIssueCategoriesToTheSameProject(t *testi
 	})
 }
 
-func TestAccIssueCategoryUpdate_issueValuesChanged(t *testing.T) {
+func TestAccIssueCategoryUpdate_categoryValuesChanged(t *testing.T) {
 	projectResourceIDReference := testProjectTFResource + ".id"
 	tfProjectAndIssueCategoryBlocksCreation := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
 		issueCategoryAsHCL(testIssueCategoryTFResourceName, projectResourceIDReference, "original category")
