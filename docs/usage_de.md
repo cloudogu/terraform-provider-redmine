@@ -56,6 +56,16 @@ resource "redmine_issue" "issue1" {
   subject = "Something should be done"
   description = "In this ticket an **important task** should be done!\n\nGo ahead!\n\n```bash\necho -n $PATH\n```"
 }
+
+resource "redmine_version" "issue_category_dev" {
+  project_id = redmine_project.project1.id
+  name = "Sprint 2021-06"
+  description = "Super-App Scrum Sprint 6 (team codename: Eagle in the jar)"
+  // valid values: open (default when omitted at creation), locked, closed
+  status = "locked"
+  // can be empty or must match date format YYYY-MM-DD
+  due_date = "2021-04-01"
+}
 ```
 
 ## Terraform-Workflow
