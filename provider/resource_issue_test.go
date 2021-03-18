@@ -24,6 +24,7 @@ const (
 	issKeySubject       = "subject"
 	issKeyDescription   = "description"
 	issKeyParentIssueID = "parent_issue_id"
+	issKeyPriorityID    = "priority_id"
 	issKeyCreatedOn     = "created_on"
 	issKeyUpdatedOn     = "updated_on"
 )
@@ -31,7 +32,7 @@ const (
 func TestAccIssueCreate_basic(t *testing.T) {
 	projectResourceIDReference := testProjectTFResource + ".id"
 	tfProjectAndIssueBlocks := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue")
+		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -47,6 +48,7 @@ func TestAccIssueCreate_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeySubject, "issue subject"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyPriorityID, "2"),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
 				),
@@ -59,8 +61,8 @@ func TestAccIssueCreate_multipleIssuesToTheSameProject(t *testing.T) {
 	projectResourceIDReference := testProjectTFResource + ".id"
 
 	tfProjectAndIssueBlocks := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue") + "\n" +
-		issueAsJSON("another_issue", projectResourceIDReference, 1, "issue subject2", "This is an example issue2")
+		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2) + "\n" +
+		issueAsJSON("another_issue", projectResourceIDReference, 1, "issue subject2", "This is an example issue2", 5)
 	testIssueTFRessourceName2 := testIssueTFResourceType + "." + "another_issue"
 
 	resource.Test(t, resource.TestCase{
@@ -77,6 +79,7 @@ func TestAccIssueCreate_multipleIssuesToTheSameProject(t *testing.T) {
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeySubject, "issue subject"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "This is an example issue"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyPriorityID, "2"),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
 					// check 2nd issue
@@ -86,6 +89,7 @@ func TestAccIssueCreate_multipleIssuesToTheSameProject(t *testing.T) {
 					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeySubject, "issue subject2"),
 					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyDescription, "This is an example issue2"),
 					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttr(testIssueTFRessourceName2, issKeyPriorityID, "5"),
 					resource.TestCheckResourceAttrSet(testIssueTFRessourceName2, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFRessourceName2, issKeyUpdatedOn),
 				),
@@ -97,9 +101,9 @@ func TestAccIssueCreate_multipleIssuesToTheSameProject(t *testing.T) {
 func TestAccIssueUpdate_issueValuesChanged(t *testing.T) {
 	projectResourceIDReference := testProjectTFResource + ".id"
 	tfProjectAndIssueBlocksCreation := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue")
+		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2)
 	tfProjectAndIssueBlocksChanged := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 1, "subjectChanged", "descriptionChanged")
+		issueAsJSON(testIssueTFResourceName, projectResourceIDReference, 1, "subjectChanged", "descriptionChanged", 5)
 
 	createdOn := "updated during 1. step"
 	updatedOn := "updated during 1. and 2. step"
@@ -133,6 +137,7 @@ func TestAccIssueUpdate_issueValuesChanged(t *testing.T) {
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeySubject, "subjectChanged"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyDescription, "descriptionChanged"),
 					resource.TestCheckResourceAttr(testIssueTFResource, issKeyParentIssueID, "0"),
+					resource.TestCheckResourceAttr(testIssueTFResource, issKeyPriorityID, "5"),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyCreatedOn),
 					resource.TestCheckResourceAttrSet(testIssueTFResource, issKeyUpdatedOn),
 					func(state *terraform.State) error {
@@ -162,11 +167,11 @@ func TestAccIssueUpdate_movesIssueToAnotherProject(t *testing.T) {
 
 	tfProjectAndIssueBlocksCreated := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
 		genericProjectAsJSON("project2", "anotherproject", "target project for moved issues", "desc", "", false, false) + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceID1Reference, 2, "issue subject", "This is an example issue")
+		issueAsJSON(testIssueTFResourceName, projectResourceID1Reference, 2, "issue subject", "This is an example issue", 2)
 
 	tfProjectAndIssueBlocksMovedIssue := basicProjectWithDescription("testproject", "project", "a project") + "\n" +
 		genericProjectAsJSON("project2", "anotherproject", "target project for moved issues", "desc", "", false, false) + "\n" +
-		issueAsJSON(testIssueTFResourceName, projectResourceID2Reference, 2, "issue subject", "This is an example issue")
+		issueAsJSON(testIssueTFResourceName, projectResourceID2Reference, 2, "issue subject", "This is an example issue", 2)
 
 	projectIDFirstRun := "updated in 1. step"
 
@@ -248,12 +253,13 @@ func testAccCheckIssueDestroy(s *terraform.State) error {
 	return testAccCheckProjectDestroy(s)
 }
 
-func issueAsJSON(tfName, projectID string, trackerID int, subject, description string) string {
+func issueAsJSON(tfName, projectID string, trackerID int, subject, description string, prioID int) string {
 	return fmt.Sprintf(`resource "%s" "%s" {
   project_id = %s
   tracker_id = %d
   subject = "%s"
   description = "%s"
+  priority_id = "%d"
 }`, testIssueTFResourceType, tfName,
-		projectID, trackerID, subject, description)
+		projectID, trackerID, subject, description, prioID)
 }
