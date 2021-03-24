@@ -11,7 +11,6 @@ provider "redmine" {
   username = var.username
   password = var.password
   skip_cert_verify = true
-  api_key = var.apikey
 }
 
 /*

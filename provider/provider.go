@@ -53,7 +53,6 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
 	skipVerify := d.Get("skip_cert_verify").(bool)
-	apiKey := d.Get("api_key").(string)
 
 	var url string
 
@@ -67,7 +66,6 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		Username:       username,
 		Password:       password,
 		SkipCertVerify: skipVerify,
-		APIKey:         apiKey,
 	})
 
 	if err != nil {

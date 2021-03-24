@@ -16,7 +16,6 @@ type Config struct {
 	Username       string
 	Password       string
 	SkipCertVerify bool
-	APIKey         string
 }
 
 func NewClient(config Config) (*Client, error) {
