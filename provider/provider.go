@@ -39,12 +39,12 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"redmine_project": resourceProject(),
-			"redmine_issue":   resourceIssue(),
+			"redmine_project":        resourceProject(),
+			"redmine_issue":          resourceIssue(),
+			"redmine_issue_category": resourceIssueCategory(),
+			"redmine_version":        resourceVersion(),
 		},
-		DataSourcesMap: map[string]*schema.Resource{
-			"redmine_issue_statuses": dataSourceIssueStatuses(),
-		},
+		DataSourcesMap:       map[string]*schema.Resource{},
 		ConfigureContextFunc: providerConfigure,
 	}
 }
@@ -53,7 +53,6 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
 	skipVerify := d.Get("skip_cert_verify").(bool)
-	apiKey := d.Get("api_key").(string)
 
 	var url string
 
@@ -62,13 +61,16 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		url = uVal.(string)
 	}
 
-	client := redmine.NewClient(redmine.Config{
+	client, err := redmine.NewClient(redmine.Config{
 		URL:            url,
 		Username:       username,
 		Password:       password,
 		SkipCertVerify: skipVerify,
-		APIKey:         apiKey,
 	})
+
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
 
 	return client, nil
 }

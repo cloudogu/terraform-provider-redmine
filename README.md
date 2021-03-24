@@ -12,8 +12,8 @@ You can find more information about using this provider in
 ### Developing this provider
 
 You can find more information about building and testing this provider in 
-- [docs/development_en.md (english)](docs/development_en.md) or
-- [docs/development_de.md (deutsch)](docs/development_de.md)
+- [development_en.md (english)](docs/development/development_en.md) or
+- [development_de.md (deutsch)](docs/development/development_de.md)
 
 ---
 ### What is the Cloudogu EcoSystem?
