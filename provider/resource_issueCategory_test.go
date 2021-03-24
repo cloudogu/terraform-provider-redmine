@@ -28,7 +28,6 @@ func TestAccIssueCategoryCreate_basic(t *testing.T) {
 		issueCategoryAsHCL(testIssueCategoryTFResourceName, projectResourceIDReference, "category name")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIssueCategoryDestroy,
 		Steps: []resource.TestStep{
@@ -53,7 +52,6 @@ func TestAccIssueCategoryCreate_multipleIssueCategoriesToTheSameProject(t *testi
 	testIssueCategoryTFRessourceName2 := testIssueCategoryTFResourceType + "." + "another_issue_category"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIssueCategoryDestroy,
 		Steps: []resource.TestStep{
@@ -81,7 +79,6 @@ func TestAccIssueCategoryUpdate_categoryValuesChanged(t *testing.T) {
 		issueCategoryAsHCL(testIssueCategoryTFResourceName, projectResourceIDReference, "Booyaka! Renamed!")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIssueCategoryDestroy,
 		Steps: []resource.TestStep{

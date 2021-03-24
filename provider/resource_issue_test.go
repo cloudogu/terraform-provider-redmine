@@ -36,7 +36,6 @@ func TestAccIssueCreate_basic(t *testing.T) {
 		issueAsHCL(testIssueTFResourceName, projectResourceIDReference, 2, "issue subject", "This is an example issue", 2)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIssueDestroy,
 		Steps: []resource.TestStep{
@@ -68,7 +67,6 @@ func TestAccIssueCreate_multipleIssuesToTheSameProject(t *testing.T) {
 	testIssueTFRessourceName2 := testIssueTFResourceType + "." + "another_issue"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIssueDestroy,
 		Steps: []resource.TestStep{
@@ -113,7 +111,6 @@ func TestAccIssueUpdate_issueValuesChanged(t *testing.T) {
 	updatedOn := "updated during 1. and 2. step"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIssueDestroy,
 		Steps: []resource.TestStep{
@@ -181,7 +178,6 @@ func TestAccIssueUpdate_movesIssueToAnotherProject(t *testing.T) {
 	projectIDFirstRun := "updated in 1. step"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIssueDestroy,
 		Steps: []resource.TestStep{
@@ -250,7 +246,6 @@ func TestAccIssueCreate_addAndRemoveIssueCategory(t *testing.T) {
 		issueCategoryAsHCL(testIssueCategoryTFResourceName, projectResourceIDReference, "Bananas and other tropical fruits")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckIssueDestroy,
 		Steps: []resource.TestStep{

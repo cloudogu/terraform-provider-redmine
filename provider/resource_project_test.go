@@ -38,7 +38,6 @@ const (
 
 func TestAccProjectCreate_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckProjectDestroy,
 		Steps: []resource.TestStep{
@@ -65,7 +64,6 @@ func TestAccProjectCreate_multipleProjects(t *testing.T) {
 	const project2Name = "project2"
 	const project2TFResource = testProjectTFResourceType + "." + project2Name
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckProjectDestroy,
 		Steps: []resource.TestStep{
@@ -105,7 +103,6 @@ func TestAccProjectUpdate(t *testing.T) {
 	createdOn := "updated during 1. step"
 	updatedOn := "updated during 1. and 2. step"
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckProjectDestroy,
 		Steps: []resource.TestStep{

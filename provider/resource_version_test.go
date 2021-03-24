@@ -36,7 +36,6 @@ func TestAccVersionCreate_basic(t *testing.T) {
 		VersionAsHCL(testVersionTFResourceName, projectResourceIDReference, "Sprint 1", "desc", "open", "")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckVersionDestroy,
 		Steps: []resource.TestStep{
@@ -66,7 +65,6 @@ func TestAccVersionCreate_multipleIssueCategoriesToTheSameProject(t *testing.T) 
 	testVersionTFRessourceName3 := testVersionTFResourceType + "." + "yet_another_version"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckVersionDestroy,
 		Steps: []resource.TestStep{
@@ -112,7 +110,6 @@ func TestAccVersionUpdate_versionValuesChanged(t *testing.T) {
 		VersionAsHCL(testVersionTFResourceName, projectResourceIDReference, "Shazam! Renamed!", "Booyaka! Renamed!", "closed", "2021-03-01")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviders,
 		CheckDestroy:      testAccCheckVersionDestroy,
 		Steps: []resource.TestStep{
