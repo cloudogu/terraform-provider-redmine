@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -27,10 +26,4 @@ func TestProvider(t *testing.T) {
 
 func TestProvider_impl(t *testing.T) {
 	var _ *schema.Provider = Provider()
-}
-
-func testAccPreCheck(t *testing.T) {
-	if err := os.Getenv("REDMINE_API_KEY"); err == "" {
-		t.Fatal("REDMINE_API_KEY must be set for acceptance tests")
-	}
 }

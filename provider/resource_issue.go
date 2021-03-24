@@ -15,6 +15,8 @@ const (
 	IssSubject       = "subject"
 	IssDescription   = "description"
 	IssParentIssueID = "parent_issue_id"
+	IssPriorityID    = "priority_id"
+	IssCategoryID    = "category_id"
 	IssCreatedOn     = "created_on"
 	IssUpdatedOn     = "updated_on"
 )
@@ -60,6 +62,14 @@ func resourceIssue() *schema.Resource {
 				Default:  "",
 			},
 			IssParentIssueID: {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			IssPriorityID: {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			IssCategoryID: {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
@@ -148,6 +158,7 @@ func resourceIssueDelete(ctx context.Context, d *schema.ResourceData, i interfac
 
 func issueSetToState(issue *redmine.Issue, d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
+
 	d.SetId(issue.ID)
 	if err := d.Set(IssProjectID, issue.ProjectID); err != nil {
 		return diag.FromErr(err)
@@ -162,6 +173,12 @@ func issueSetToState(issue *redmine.Issue, d *schema.ResourceData) diag.Diagnost
 		return diag.FromErr(err)
 	}
 	if err := d.Set(IssDescription, issue.Description); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set(IssPriorityID, issue.PriorityID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set(IssCategoryID, issue.CategoryID); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set(IssCreatedOn, issue.CreatedOn); err != nil {
@@ -185,6 +202,16 @@ func issueFromState(d *schema.ResourceData) *redmine.Issue {
 	issueID := d.Id()
 	if issueID != "" && issueID != "0" {
 		issue.ID = issueID
+	}
+
+	issuePriorityID := d.Get(IssPriorityID).(int)
+	if issuePriorityID != 0 {
+		issue.PriorityID = issuePriorityID
+	}
+
+	issueCategoryID := d.Get(IssCategoryID).(int)
+	if issueCategoryID != 0 {
+		issue.CategoryID = issueCategoryID
 	}
 
 	return issue

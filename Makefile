@@ -12,7 +12,6 @@ include build/make/variables.mk
 DEFAULT_ADMIN_CREDENTIALS=admin:admin
 REDMINE_URL?=http://localhost:3000
 REDMINE_CONTAINERNAME?=terraform-provider-redmine_redmine_1
-REDMINE_API_TOKEN_FILE=examples/api_token.auto.tfvars
 ACCEPTANCE_TEST_DIR=$(TARGET_DIR)/acceptance-tests
 ACCEPTANCE_TEST_LOG=${ACCEPTANCE_TEST_DIR}/acceptance.test.log
 ACCEPTANCE_TEST_JUNIT=${ACCEPTANCE_TEST_LOG}.xml
@@ -49,8 +48,8 @@ clean-test-cache:
 	@echo clean go testcache
 	@go clean -testcache
 
-acceptance-test: $(BINARY) $(ACCEPTANCE_TEST_DIR) api-token-to-var
-	@REDMINE_API_KEY=${API_TOKEN} TF_ACC=1 go test -v ./... -coverprofile=$(ACCEPTANCE_TEST_DIR)/coverage.out -timeout 120m 2>&1 | tee $(ACCEPTANCE_TEST_LOG)
+acceptance-test: $(BINARY) $(ACCEPTANCE_TEST_DIR)
+	@TF_ACC=1 go test -v ./... -coverprofile=$(ACCEPTANCE_TEST_DIR)/coverage.out -timeout 120m 2>&1 | tee $(ACCEPTANCE_TEST_LOG)
 	@cat $(ACCEPTANCE_TEST_LOG) | go-junit-report > ${ACCEPTANCE_TEST_JUNIT}
 	@if grep '^FAIL' $(ACCEPTANCE_TEST_LOG); then \
 		exit 1; \
@@ -59,12 +58,6 @@ acceptance-test: $(BINARY) $(ACCEPTANCE_TEST_DIR) api-token-to-var
 .PHONY: acceptance-test-local
 acceptance-test-local: $(ACCEPTANCE_TEST_DIR)
 	@${TF_ADDITIONAL_ENVS} make acceptance-test
-
-.PHONY: api-token-to-var
-api-token-to-var: fetch-api-token
-	@# create non-permanent env var at make runtime, see https://stackoverflow.com/a/1909390/12529534
-	$(eval API_TOKEN :=$(shell sed -re 's/apikey = "(.*)"/\1/' ${REDMINE_API_TOKEN_FILE}))
-	@echo "Make Redmine API token ${API_TOKEN} available"
 
 $(ACCEPTANCE_TEST_DIR):
 	@echo "create acceptance-test directory"
@@ -105,11 +98,6 @@ install-sqlite-client:
 		echo "Installing sqlite..." ; \
 		docker exec ${REDMINE_CONTAINERNAME} apk add sqlite ; \
 	fi;
-
-.PHONY fetch-api-token:
-fetch-api-token: ${TARGET_DIR}
-	@echo "Fetching API token"
-	@curl -f -s -H "Content-Type: application/json" -u ${DEFAULT_ADMIN_CREDENTIALS} ${REDMINE_URL}/my/account.json | sed -r 's/^.+api_key":"(.+)".+/apikey = "\1"/' > ${REDMINE_API_TOKEN_FILE}
 
 .PHONY start-redmine:
 start-redmine:

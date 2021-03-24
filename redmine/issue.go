@@ -15,6 +15,8 @@ type Issue struct {
 	Subject       string `json:"subject"`
 	Description   string `json:"description"`
 	ParentIssueID int    `json:"parent_issue_id"`
+	PriorityID    int    `json:"priority_id"`
+	CategoryID    int    `json:"category_id"`
 	CreatedOn     string `json:"created_on"`
 	UpdatedOn     string `json:"updated_on"`
 }
@@ -29,7 +31,7 @@ func (c *Client) CreateIssue(ctx context.Context, issue *Issue) (*Issue, error) 
 
 	createdAPIIssue, err := c.redmineAPI.CreateIssue(*apiIssue)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error while creating issue (id: %s, subject: %s)", issue.ID, issue.Subject)
+		return nil, errors.Wrapf(err, "error while creating issue (project id: %d, subject: %s)", issue.ProjectID, issue.Subject)
 	}
 
 	actualIssue := unwrapIssue(createdAPIIssue)
@@ -101,9 +103,29 @@ func wrapIssue(issue *Issue) *rmapi.Issue {
 	if issue.ID != "" {
 		apiIssue.Id, _ = strconv.Atoi(issue.ID)
 	}
+
 	if issue.ParentIssueID != 0 {
+		if apiIssue.Parent == nil {
+			apiIssue.Parent = &rmapi.Id{}
+		}
 		apiIssue.Parent.Id = issue.ParentIssueID
 		apiIssue.ParentId = issue.ParentIssueID
+	}
+
+	if issue.PriorityID != 0 {
+		if apiIssue.Priority == nil {
+			apiIssue.Priority = &rmapi.IdName{}
+		}
+		apiIssue.Priority.Id = issue.PriorityID
+		apiIssue.PriorityId = issue.PriorityID
+	}
+
+	if issue.CategoryID != 0 {
+		if apiIssue.Category == nil {
+			apiIssue.Category = &rmapi.IdName{}
+		}
+		apiIssue.Category.Id = issue.CategoryID
+		apiIssue.CategoryId = issue.CategoryID
 	}
 
 	return apiIssue
@@ -129,6 +151,14 @@ func unwrapIssue(apiIssue *rmapi.Issue) *Issue {
 
 	if apiIssue.Tracker != nil {
 		issue.TrackerID = apiIssue.Tracker.Id
+	}
+
+	if apiIssue.Priority != nil {
+		issue.PriorityID = apiIssue.Priority.Id
+	}
+
+	if apiIssue.Category != nil {
+		issue.CategoryID = apiIssue.Category.Id
 	}
 
 	return issue
