@@ -72,16 +72,39 @@ Für Redmine-Issues werden derzeit diese Objektfelder unterstützt:
       - Tracker ID 1 -> Bug
       - Tracker ID 2 -> Feature
       - Tracker ID 3 -> Support
-- `subject`
-- `description`
+- `subject` -> the title of the issue
+- `description` -> a multline description that makes the body of the issue
+- `priority_id` -> referenziert eine Issue-Priorität aus der Issue-Prioritäten-Aufzählung
+    - siehe auch `local.redmine_default_issue_priorities_ids.immediate` in `examples/main.tf`
+- `category_id` -> referenziert eine Terraform-Issue-Kategorie-Ressourcenreferenz
+    - z. B. `redmine_issue_category.your_issue_category.id`
+
+**Issue Categories:**
+
+Für Redmine-Ticketkategorien werden derzeit diese Objektfelder unterstützt:
+- `project_id` -> referenziert ein Projekt über eine Terraform-Ressourcenreferenz
+  - z. B. `redmine_project.yourtfproject.id`
+- `name` -> name of the issue category
+
+**Versions:**
+
+Für Redmine-Versionen werden derzeit diese Objektfelder unterstützt:
+
+- `project_id` -> referenziert ein Projekt über eine Terraform-Ressourcenreferenz
+  - z. B. `redmine_project.yourtfproject.id`
+- `name` -> ein menschenlesbarer Name der Version
+- `description` -> eine einzeilige Beschreibung der Version
+- `status` -> eine dieser Zeichenketten (standardmäßig "open" bei der Erstellung):
+    - `open`
+    - `locked`
+    - `closed`
+- `due_date` -> das Datum, an dem die Version fällig ist, im Format `YYYY-MM-DD`
 
 ### Erwähnenswerte Aspekte von Terraform-Providern
 
 Die Erstellung eines Terraform-Providers hat einige Eigenheiten. Zum Beispiel zeigt `*schema.ResourceData.Id()/getId()` **immer** auf eine String-ID, was wiederum zu Boilerplate-Code führt, in dem int-IDs in einen String umwandelt oder die ID aus einer Entität herauslässt, wenn sie nicht gesetzt ist.
 
 IDs im Allgemeinen sind auch eine Sache, die in Akzeptanztests schwer testbar sind. Das liegt daran, dass bereits vorhandene Daten oder die Einfügereihenfolge von Fachobjekten zu anderen IDs führen können als erwartet.
-
-Damit nicht bei jeder neuen Redmine-Instanz neue Authentifizierungstoken händisch angepasst werden müssen, erzeugt das Make-Target `make fetch-api-token` die Datei `examples/api_token.auto.tfvars`. Diese wird von Terraform während der Ausführung eingelesen. Sämtliche Variablen (also auch die eben besprochene Variable `apikey`) müssen gegenüber Terraform deklariert werden. Diese Deklaration geschieht in der Datei `examples/variables.tf`.
 
 ### Erwähnenswerte Änderungen in der verwendeten Redmine-Konfiguration
 

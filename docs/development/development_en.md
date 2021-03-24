@@ -74,8 +74,34 @@ For Redmine issues these entity fields are currently supported:
         - Tracker ID 1 -> Bug
         - Tracker ID 2 -> Feature
         - Tracker ID 3 -> Support
-- `subject`
-- `description`
+- `subject` -> the title of the issue 
+- `description` -> a multiline description that makes the body of the issue
+- `priority_id` -> reference an issue priority from the issue priority enumeration
+    - see also `local.redmine_default_issue_priorities_ids.immediate` in `examples/main.tf`
+- `category_id` -> reference an issue category entity 
+    - f. i. `redmine_issue_category.your_issue_category.id`
+
+**Issue Categories:**
+
+For Redmine issue categories these entity fields are currently supported:
+- `project_id` -> reference a project via Terraform resource reference
+    - f. i. `redmine_project.yourtfproject.id`
+- `name` -> name of the issue category
+
+**Versions:**
+
+For Redmine versions these entity fields are currently supported:
+
+- `project_id` -> reference a project via Terraform resource reference
+    - f. i. `redmine_project.yourtfproject.id`
+- `name` -> the human-readable name of the version
+- `description` -> a single-line description of the version
+- `status` -> one of these strings (defaults to "open" on creation):
+  - `open`
+  - `locked`
+  - `closed`
+- `due_date` -> the date when the version is due in the format `YYYY-MM-DD`
+
 
 ### Notable Aspects of Terraform Providers
 
@@ -85,11 +111,6 @@ entity if unset.
 
 IDs in general are also a thing that are hard to test against in acceptance tests. This is because already existing data
 or entity insertion sequence may lead to different IDs than expected.
-
-To avoid having to manually adjust new authentication tokens with each new Redmine instance, the make
-target `make fetch-api-token` creates the file `examples/api_token.auto.tfvars`. This file will be read by Terraform
-during execution. All variables (including the variable `apikey`) must be declared to Terraform. This declaration is
-done in the file `examples/variables.tf`.
 
 ### Notable changes in the used Redmine configuration
 
