@@ -1,6 +1,6 @@
 MAKEFILES_VERSION=4.3.1
 OS_ARCH=linux_amd64
-VERSION=0.1.0
+VERSION=0.2.0
 ARTIFACT_ID=terraform-provider-redmine_${VERSION}_${OS_ARCH}
 
 HOSTNAME=cloudogu.com
