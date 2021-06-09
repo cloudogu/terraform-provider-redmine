@@ -175,3 +175,14 @@ Der Provider kann dann mit Übergabe der RC-Datei (fast wie üblich) ausgeführt
 ```bash
 TF_CLI_CONFIG_FILE=myterraformrc ./terraform init
 ```
+
+## Dokumentation für Terraform aktualisieren
+
+Es gibt das offizielle Tool `tfplugindocs` von Terraform, welches eine einheitliche Dokumentation für die Provider erzeugt.
+Diese sollte vor jeden Release aktualisiert werden, wenn sich grundlegende Dinge am Provider geändert haben.
+
+**Hinweis:** Das Ausführen von dem Tool entfernt den docs Ordner und erstellt ihn neu. Es ist daher sinnvoll nicht generierte Doku vorher herauszunehmen -> Doku zu generieren -> nicht generierte Doku wieder hinzuzufügen.
+
+```bash
+tfplugindocs
+```
