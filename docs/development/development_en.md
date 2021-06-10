@@ -183,3 +183,14 @@ Execute the provider (almost as usual) like this:
 ```bash
 TF_CLI_CONFIG_FILE=myterraformrc ./terraform init
 ```
+
+## Update documentation for Terraform
+
+There is the official tool `tfplugindocs` from Terraform, which generates a unified documentation for the providers.
+This should be updated before each release if basic things have changed at the provider.
+
+**Note: Running the tool will remove the docs folder and recreate it. It is therefore useful to remove not generated docs before -> generate docs -> add not generated docs again.
+
+``bash
+tfplugindocs
+```

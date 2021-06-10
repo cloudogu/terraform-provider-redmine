@@ -5,3 +5,4 @@ target/
 examples/.terraform.lock.hcl
 examples/terraform.tfstate*
 examples/api_token.auto.tfvars
+vendor/
